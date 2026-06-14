@@ -3,6 +3,7 @@ import { useData } from './data/DataProvider';
 import { useAuth } from './auth/AuthContext';
 import { useClients, useClientDetail, useCreateClient, useDeleteClient } from './hooks/useClients';
 import { useCreateProject } from './hooks/useProjects';
+import { useTimeLog, useAddTimeEntry, useDeleteTimeEntry } from './hooks/useTimeLog';
 
 import LandingPage from './components/LandingPage';
 import Login from './pages/Login';
@@ -115,7 +116,7 @@ function ClientDetailRoute() {
         })
       }
       onNavigateToInvoiceGenerator={(clientId) => navigate(`/invoices/new?clientId=${clientId}`)}
-      onNavigateToTimeLog={soon('Time logging')}
+      onNavigateToTimeLog={(projectId) => navigate(`/clients/${id}/projects/${projectId}`)}
       onDownloadInvoice={downloadInvoice}
       onMarkInvoicePaid={soon('Marking invoices paid')}
       onDeleteInvoice={soon('Deleting invoices')}
@@ -162,17 +163,22 @@ function InvoiceGeneratorRoute() {
 function TimeLogRoute() {
   const navigate = useNavigate();
   const { projectId } = useParams();
-  const { projects, timeEntries, settings, addLog, deleteLog } = useData();
-  const project = projects.find((p) => p.id === projectId);
-  if (!project) return <Navigate to="/clients" replace />;
+  const { settings } = useData();
+  const { data, isLoading, isError } = useTimeLog(projectId);
+  const addLog = useAddTimeEntry(projectId ?? '');
+  const deleteLog = useDeleteTimeEntry(projectId ?? '');
+
+  if (isLoading) return <RouteLoading label="Loading project…" />;
+  if (isError || !data) return <Navigate to="/clients" replace />;
+
   return (
     <TimeLog
-      project={project}
-      timeEntries={timeEntries}
+      project={data.project}
+      timeEntries={data.entries}
       settings={settings}
       onBackToClient={(clientId) => navigate(`/clients/${clientId}`)}
-      onAddLog={(log) => addLog(project.id, log)}
-      onDeleteLog={deleteLog}
+      onAddLog={(log) => addLog.mutate(log)}
+      onDeleteLog={(logId) => deleteLog.mutate(logId)}
     />
   );
 }

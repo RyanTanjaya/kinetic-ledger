@@ -61,4 +61,37 @@ router.delete('/:id', async (req, res) => {
   res.status(204).send();
 });
 
+// ── Nested: log time against a project ─────────────────────────────────────
+const timeEntryCreateSchema = z.object({
+  description: z.string().min(1, 'Description is required'),
+  hours: z.number().positive(),
+  date: z.string(), // YYYY-MM-DD
+});
+
+// POST /api/projects/:id/time-entries
+router.post('/:id/time-entries', async (req, res) => {
+  const owned = await prisma.project.findFirst({
+    where: { id: req.params.id, client: { userId: req.userId! } },
+    select: { id: true },
+  });
+  if (!owned) {
+    res.status(404).json({ error: 'Project not found' });
+    return;
+  }
+  const parsed = timeEntryCreateSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Invalid input', details: parsed.error.flatten() });
+    return;
+  }
+  const entry = await prisma.timeEntry.create({
+    data: {
+      project: { connect: { id: req.params.id } },
+      description: parsed.data.description,
+      hours: parsed.data.hours,
+      date: new Date(parsed.data.date),
+    },
+  });
+  res.status(201).json({ entry });
+});
+
 export default router;
