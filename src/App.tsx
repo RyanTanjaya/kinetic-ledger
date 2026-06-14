@@ -6,6 +6,7 @@ import { useCreateProject } from './hooks/useProjects';
 import { useTimeLog, useAddTimeEntry, useDeleteTimeEntry } from './hooks/useTimeLog';
 import { useDashboard } from './hooks/useDashboard';
 import { useInvoices, useCreateInvoice, useMarkInvoicePaid, useDeleteInvoice } from './hooks/useInvoices';
+import { useSettings } from './hooks/useSettings';
 
 import LandingPage from './components/LandingPage';
 import Login from './pages/Login';
@@ -237,7 +238,9 @@ function TimeLogRoute() {
 }
 
 function SettingsRoute() {
-  const { settings, saveSettings } = useData();
+  const { data: settings, isLoading } = useSettings();
+  const { saveSettings } = useData();
+  if (isLoading || !settings) return <RouteLoading label="Loading settings…" />;
   return <PortalSettings settings={settings} onSaveSettings={saveSettings} />;
 }
 

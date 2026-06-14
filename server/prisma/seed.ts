@@ -11,16 +11,18 @@ const DEMO_PASSWORD = 'demo1234';
 async function main() {
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
 
+  const profile = {
+    name: 'Ryan Tanjaya',
+    businessName: 'Ryan Dev Studio',
+    currency: 'USD',
+    invoicePrefix: 'INV',
+    paymentTerms: 'Net 30',
+    defaultNotes: 'Please transfer payment to: [Bank details on file]',
+  };
   const user = await prisma.user.upsert({
     where: { email: DEMO_EMAIL },
-    update: { name: 'Ryan Tanjaya', businessName: 'Ryan Dev Studio', currency: 'USD' },
-    create: {
-      email: DEMO_EMAIL,
-      passwordHash,
-      name: 'Ryan Tanjaya',
-      businessName: 'Ryan Dev Studio',
-      currency: 'USD',
-    },
+    update: profile,
+    create: { email: DEMO_EMAIL, passwordHash, ...profile },
   });
 
   // Make the seed idempotent: clear this user's data (cascades to projects,

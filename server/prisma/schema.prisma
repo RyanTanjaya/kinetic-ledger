@@ -19,6 +19,9 @@ model User {
   businessName String?
   logoUrl      String?
   currency     String    @default("USD")
+  invoicePrefix String   @default("INV")
+  paymentTerms  String   @default("Net 30")
+  defaultNotes  String   @default("")
   createdAt    DateTime  @default(now())
   clients      Client[]
   invoices     Invoice[]

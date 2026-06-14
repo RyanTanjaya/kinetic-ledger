@@ -1,35 +1,43 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { X, Download } from 'lucide-react';
 import { Invoice, ProfileSettings } from '../types';
 import { INITIAL_SETTINGS } from './mockData';
 import { downloadInvoicePdf } from '../lib/pdf';
+import { useAuth } from '../auth/AuthContext';
+import { fetchSettings, updateSettings } from '../api/settings';
 
-// Lightweight app context. Clients/projects/invoices/time are all served by the
-// live API now (TanStack Query); this just holds the current user settings
-// (until Step 9 wires them to the API) and the one-click invoice PDF download.
+// Holds the live user settings (shared across the app for currency, branding,
+// invoice defaults) and the one-click invoice PDF download.
 interface DataContextValue {
   settings: ProfileSettings;
-  saveSettings: (s: ProfileSettings) => void;
+  saveSettings: (s: ProfileSettings) => Promise<void>;
   downloadInvoice: (inv: Invoice) => void;
 }
 
 const DataContext = createContext<DataContextValue | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<ProfileSettings>(INITIAL_SETTINGS);
+  const { isAuthenticated } = useAuth();
+  const qc = useQueryClient();
+  const { data: liveSettings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: fetchSettings,
+    enabled: isAuthenticated,
+  });
+  const settings = liveSettings ?? INITIAL_SETTINGS;
   const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
 
-  const getCurrencySymbol = (curr: string) => {
-    const symbolMap: Record<string, string> = { USD: '$', EUR: '€', GBP: '£', SGD: 'S$', AUD: 'A$', MYR: 'RM' };
-    return symbolMap[curr] || '$';
-  };
-
   const formatCurrency = (val: number) => {
-    const symbol = getCurrencySymbol(settings.currency);
+    const symbolMap: Record<string, string> = { USD: '$', EUR: '€', GBP: '£', SGD: 'S$', AUD: 'A$', MYR: 'RM' };
+    const symbol = symbolMap[settings.currency] || '$';
     return `${symbol}${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const saveSettings = (s: ProfileSettings) => setSettings(s);
+  const saveSettings = async (s: ProfileSettings) => {
+    await updateSettings(s);
+    await qc.invalidateQueries({ queryKey: ['settings'] });
+  };
 
   const downloadInvoice = (invoice: Invoice) => {
     void downloadInvoicePdf(invoice, settings);
