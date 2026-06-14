@@ -1,0 +1,6 @@
+{
+  "name": "Freelancer Client Portal",
+  "description": "A refined, high-fidelity SaaS client portal and dashboard for freelancers to manage clients, track active projects, log billable time, and generate professional PDF invoices.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

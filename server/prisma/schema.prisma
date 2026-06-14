@@ -1,0 +1,113 @@
+// Kinetic Ledger — database schema
+// Six models covering the full freelance-billing domain. All user data is
+// isolated by userId; deleting a parent cascades to its children.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  businessName String?
+  logoUrl      String?
+  currency     String    @default("USD")
+  createdAt    DateTime  @default(now())
+  clients      Client[]
+  invoices     Invoice[]
+}
+
+model Client {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  email     String?
+  company   String?
+  phone     String?
+  createdAt DateTime  @default(now())
+  projects  Project[]
+  invoices  Invoice[]
+
+  @@index([userId])
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  clientId    String
+  client      Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+  hourlyRate  Float         @default(0)
+  totalBudget Float?
+  createdAt   DateTime      @default(now())
+  timeEntries TimeEntry[]
+
+  @@index([clientId])
+}
+
+enum ProjectStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+model TimeEntry {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  description String
+  hours       Float
+  date        DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([projectId])
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId      String
+  client        Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  invoiceNumber String
+  status        InvoiceStatus @default(DRAFT)
+  totalAmount   Float         @default(0)
+  dueDate       DateTime
+  issuedAt      DateTime      @default(now())
+  paidAt        DateTime?
+  notes         String?
+  items         InvoiceItem[]
+
+  // Invoice numbers are unique per user (e.g. each user has their own INV-001).
+  @@unique([userId, invoiceNumber])
+  @@index([userId])
+  @@index([clientId])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Float
+  unitPrice   Float
+  total       Float // quantity * unitPrice, stored for easy querying
+
+  @@index([invoiceId])
+}

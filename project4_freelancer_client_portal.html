@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project 4 — Freelancer Client Portal</title>
+<style>
+  :root {
+    --indigo: #6366f1;
+    --indigo-dark: #4f46e5;
+    --indigo-light: #e0e7ff;
+    --navy: #0f172a;
+    --slate: #334155;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --green: #10b981;
+    --green-light: #d1fae5;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --purple: #8b5cf6;
+    --teal: #14b8a6;
+    --sidebar-w: 260px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; }
+
+  /* Layout */
+  .sidebar { width: var(--sidebar-w); background: var(--navy); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 24px 0 40px; z-index: 100; }
+  .sidebar-logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; }
+  .sidebar-logo .project { color: #a5b4fc; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+  .sidebar-logo .name { color: #fff; font-weight: 800; font-size: 15px; margin-top: 3px; }
+  .nav-section { padding: 10px 20px 4px; color: rgba(255,255,255,0.3); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .nav-link { display: block; padding: 7px 20px; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; border-left: 3px solid transparent; transition: all .15s; }
+  .nav-link:hover, .nav-link.active { color: #fff; background: rgba(255,255,255,0.06); border-left-color: var(--teal); }
+  .nav-link.sub { padding-left: 32px; font-size: 12px; }
+  .main { margin-left: var(--sidebar-w); max-width: 900px; padding: 48px 48px 100px; }
+
+  /* Header */
+  .page-header { background: linear-gradient(135deg, #042f2e 0%, #0d3d3b 50%, #042f2e 100%); border-radius: 16px; padding: 40px; margin-bottom: 48px; color: white; position: relative; overflow: hidden; }
+  .page-header::before { content: ''; position: absolute; top: -60px; right: -60px; width: 240px; height: 240px; background: rgba(20,184,166,0.2); border-radius: 50%; }
+  .page-header::after { content: ''; position: absolute; bottom: -40px; left: 30%; width: 160px; height: 160px; background: rgba(99,102,241,0.15); border-radius: 50%; }
+  .page-header .tag { color: #5eead4; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; position: relative; }
+  .page-header h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; position: relative; }
+  .page-header p { color: rgba(255,255,255,0.6); font-size: 14px; max-width: 520px; position: relative; }
+  .header-badges { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; position: relative; }
+  .hbadge { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.85); border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 500; }
+  .hbadge.teal { background: rgba(20,184,166,0.25); border-color: rgba(20,184,166,0.5); color: #5eead4; }
+  .hbadge.green { background: rgba(16,185,129,0.2); border-color: rgba(16,185,129,0.4); color: #6ee7b7; }
+  .hbadge.purple { background: rgba(139,92,246,0.25); border-color: rgba(139,92,246,0.5); color: #c4b5fd; }
+
+  /* Section */
+  .section { margin-bottom: 56px; }
+  h2 { font-size: 21px; font-weight: 800; color: var(--navy); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  h3 { font-size: 15px; font-weight: 700; color: var(--slate); margin: 28px 0 12px; }
+  h4 { font-size: 13px; font-weight: 700; color: var(--indigo-dark); margin: 18px 0 8px; text-transform: uppercase; letter-spacing: .05em; }
+  p { margin-bottom: 14px; }
+  a { color: var(--indigo-dark); text-decoration: none; }
+  strong { color: var(--navy); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin: 14px 0 22px; border-radius: 10px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead { background: var(--navy); color: white; }
+  thead th { padding: 11px 16px; text-align: left; font-weight: 600; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f8faff; }
+  tbody td { padding: 10px 16px; vertical-align: top; }
+  tbody td:first-child { font-weight: 600; color: var(--slate); white-space: nowrap; }
+
+  /* Code */
+  pre { background: var(--navy); color: #e2e8f0; border-radius: 10px; padding: 20px; overflow-x: auto; font-size: 13px; line-height: 1.65; margin: 14px 0; font-family: 'Fira Code', Consolas, monospace; white-space: pre-wrap; word-break: break-word; }
+  code { background: #e8ecf4; color: #4f46e5; padding: 2px 6px; border-radius: 5px; font-size: 13px; font-family: 'Fira Code', Consolas, monospace; }
+  pre code { background: none; color: inherit; padding: 0; }
+
+  /* Prompt blocks */
+  .prompt-block { background: #f0f4ff; border-left: 4px solid var(--indigo); border-radius: 0 10px 10px 0; padding: 14px 52px 14px 18px; margin: 12px 0; position: relative; }
+  .prompt-block.teal { background: #f0fdfa; border-left-color: var(--teal); }
+  .prompt-label { font-size: 10px; font-weight: 700; color: var(--indigo-dark); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+  .prompt-block.teal .prompt-label { color: #0d9488; }
+  .prompt-block pre { background: transparent; color: var(--slate); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; line-height: 1.6; margin: 0; padding: 0; font-style: italic; }
+  .copy-btn { position: absolute; top: 12px; right: 12px; background: var(--indigo); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 11px; font-weight: 600; cursor: pointer; opacity: 0; transition: opacity .2s; z-index: 10; }
+  .prompt-block.teal .copy-btn { background: var(--teal); }
+  .prompt-block:hover .copy-btn { opacity: 1; }
+
+  /* Cards */
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+  .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .feature-card .fc-icon { font-size: 22px; margin-bottom: 8px; }
+  .feature-card .fc-title { font-weight: 700; color: var(--navy); font-size: 14px; margin-bottom: 4px; }
+  .feature-card .fc-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+  .feature-card.highlight { border-color: var(--teal); background: #f0fdfa; }
+
+  /* Phase cards */
+  .phase-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+  .phase-header { padding: 14px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+  .phase-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .phase-dot.mvp { background: var(--green); }
+  .phase-dot.polish { background: var(--amber); }
+  .phase-dot.stretch { background: var(--purple); }
+  .phase-header .ph-title { font-weight: 700; font-size: 14px; color: var(--navy); }
+  .phase-header .ph-tag { margin-left: auto; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .ph-tag.mvp { background: var(--green-light); color: #065f46; }
+  .ph-tag.polish { background: #fef3c7; color: #92400e; }
+  .ph-tag.stretch { background: #ede9fe; color: #5b21b6; }
+  .phase-body { padding: 16px 20px; }
+  .phase-body ul { list-style: none; padding: 0; }
+  .phase-body ul li { padding: 5px 0; font-size: 13.5px; display: flex; gap: 8px; align-items: flex-start; border-bottom: 1px solid var(--border); }
+  .phase-body ul li:last-child { border-bottom: none; }
+  .phase-body ul li::before { content: '→'; color: var(--teal); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+  /* Build steps */
+  .build-list { list-style: none; padding: 0; margin: 16px 0; }
+  .build-list li { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .build-list li:last-child { border-bottom: none; }
+  .step-num { width: 28px; height: 28px; background: linear-gradient(135deg, var(--teal), #0d9488); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .step-body { flex: 1; }
+  .step-title { font-weight: 700; font-size: 14px; color: var(--navy); }
+  .step-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; line-height: 1.5; }
+
+  /* Architecture diagram */
+  .arch { background: var(--navy); border-radius: 14px; padding: 28px; margin: 20px 0; }
+  .arch-row { display: flex; align-items: stretch; gap: 10px; margin-bottom: 10px; }
+  .arch-row:last-child { margin-bottom: 0; }
+  .arch-box { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 12px 16px; color: white; font-size: 13px; font-weight: 600; flex: 1; }
+  .arch-box.highlight { background: rgba(20,184,166,0.3); border-color: rgba(20,184,166,0.6); }
+  .arch-box.purple { background: rgba(139,92,246,0.25); border-color: rgba(139,92,246,0.5); }
+  .arch-box .sub { font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 400; margin-top: 3px; }
+  .arch-arrow { color: rgba(20,184,166,0.8); font-size: 18px; flex-shrink: 0; display: flex; align-items: center; }
+  .arch-label { color: rgba(255,255,255,0.35); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+
+  /* Info / tip */
+  .info { background: #f0f4ff; border: 1px solid #c7d2fe; border-radius: 10px; padding: 14px 18px; margin: 16px 0; font-size: 13.5px; color: var(--slate); display: flex; gap: 10px; }
+  .tip { background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 14px 18px; margin: 16px 0; font-size: 13.5px; color: #134e4a; display: flex; gap: 10px; }
+  .warn { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 14px 18px; margin: 16px 0; font-size: 13.5px; color: #9a3412; display: flex; gap: 10px; }
+  .info-icon { flex-shrink: 0; margin-top: 1px; }
+
+  /* Endpoint list */
+  .endpoint { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+  .endpoint:last-child { border-bottom: none; }
+  .method { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 2px; font-family: monospace; }
+  .method.get { background: #d1fae5; color: #065f46; }
+  .method.post { background: #dbeafe; color: #1e40af; }
+  .method.put { background: #fef3c7; color: #92400e; }
+  .method.patch { background: #fef3c7; color: #92400e; }
+  .method.delete { background: #fee2e2; color: #991b1b; }
+  .endpoint-path { font-family: monospace; font-weight: 700; color: var(--navy); }
+  .endpoint-desc { color: var(--text-muted); font-size: 13px; }
+  .endpoint-group { margin: 16px 0; }
+  .endpoint-group-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; padding: 8px 0 4px; border-bottom: 2px solid var(--border); margin-bottom: 4px; }
+
+  /* Schema */
+  .schema-block { background: var(--navy); border-radius: 10px; padding: 20px; margin: 12px 0; }
+  .schema-block pre { margin: 0; padding: 0; background: transparent; color: #e2e8f0; font-size: 12.5px; }
+
+  /* Scroll top */
+  .scroll-top { position: fixed; bottom: 28px; right: 28px; background: var(--teal); color: white; border: none; border-radius: 50%; width: 42px; height: 42px; font-size: 18px; cursor: pointer; box-shadow: 0 4px 12px rgba(20,184,166,0.4); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; z-index: 200; }
+  .scroll-top.visible { opacity: 1; }
+
+  ul { padding-left: 20px; margin: 10px 0 14px; }
+  li { margin-bottom: 5px; }
+
+  .screen-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+  .screen-header { background: linear-gradient(135deg, #042f2e, #0d3d3b); padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
+  .screen-num { background: rgba(20,184,166,0.3); border: 1px solid rgba(20,184,166,0.5); color: #5eead4; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .screen-title { color: white; font-weight: 700; font-size: 15px; }
+  .screen-body { padding: 20px; }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 24px 20px 60px; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .arch-row { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="project">Project 4 of 6</div>
+    <div class="name">Freelancer Client Portal</div>
+  </div>
+  <div class="nav-section">Overview</div>
+  <a class="nav-link" href="#overview">What It Does</a>
+  <a class="nav-link" href="#architecture">Architecture</a>
+  <a class="nav-link" href="#features">Feature Scope</a>
+
+  <div class="nav-section">Technical</div>
+  <a class="nav-link" href="#stack">Tech Stack</a>
+  <a class="nav-link" href="#schema">Database Schema</a>
+  <a class="nav-link" href="#endpoints">API Endpoints</a>
+
+  <div class="nav-section">Build</div>
+  <a class="nav-link" href="#build-order">Build Order</a>
+  <a class="nav-link" href="#design-screens">Claude Design Screens</a>
+
+  <div class="nav-section">Prompts</div>
+  <a class="nav-link" href="#prompt-claude-code">Claude Code Prompt</a>
+  <a class="nav-link" href="#prompt-design-dashboard">→ Dashboard</a>
+  <a class="nav-link sub" href="#prompt-design-dashboard">Dashboard</a>
+  <a class="nav-link sub" href="#prompt-design-clients">Clients List</a>
+  <a class="nav-link sub" href="#prompt-design-client-detail">Client Detail</a>
+  <a class="nav-link sub" href="#prompt-design-invoice-gen">Invoice Generator</a>
+  <a class="nav-link sub" href="#prompt-design-invoice-list">Invoice List</a>
+  <a class="nav-link sub" href="#prompt-design-timelog">Time Log</a>
+  <a class="nav-link sub" href="#prompt-design-settings">Settings</a>
+
+  <div class="nav-section">Deploy</div>
+  <a class="nav-link" href="#deploy">Deployment</a>
+</aside>
+
+<main class="main">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="tag">Project 4 — Full-Stack SaaS</div>
+    <h1>Freelancer Client Portal</h1>
+    <p>A full-stack SaaS dashboard where freelancers manage clients, track projects, log time, and generate professional PDF invoices — all in one place.</p>
+    <div class="header-badges">
+      <span class="hbadge teal">React + Node.js</span>
+      <span class="hbadge">PostgreSQL + Prisma</span>
+      <span class="hbadge purple">PDF Invoice Gen</span>
+      <span class="hbadge green">High Upwork Demand</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ WHAT IT DOES ═══ -->
+  <section class="section" id="overview">
+    <h2>🎯 What It Does</h2>
+    <p>Freelancers spend time chasing invoices, updating spreadsheets, and manually calculating hours. This portal eliminates all of that. After signing up, a freelancer gets a private dashboard where they can add clients, create projects under each client, log time per project, and then generate a professional PDF invoice in one click — pre-filled with all the hours and rates already in the system.</p>
+
+    <div class="feature-grid">
+      <div class="feature-card highlight">
+        <div class="fc-icon">👥</div>
+        <div class="fc-title">Client Management</div>
+        <div class="fc-desc">Add, edit, and organise all clients in one place. Each client has their own profile, project history, and invoice archive.</div>
+      </div>
+      <div class="feature-card highlight">
+        <div class="fc-icon">📁</div>
+        <div class="fc-title">Project Tracking</div>
+        <div class="fc-desc">Create projects under any client with hourly rate, status (active / paused / completed), and linked time logs.</div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">⏱️</div>
+        <div class="fc-title">Time Logging</div>
+        <div class="fc-desc">Log time entries per project — description, hours worked, date. Running totals update automatically on the dashboard.</div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">🧾</div>
+        <div class="fc-title">PDF Invoice Generator</div>
+        <div class="fc-desc">Select a client, add line items, click "Generate PDF". Professional invoice downloads instantly using pdf-lib — no backend required for rendering.</div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">📊</div>
+        <div class="fc-title">Earnings Dashboard</div>
+        <div class="fc-desc">See total earnings, this month's revenue, outstanding invoice amounts, and active project count at a glance. Bar chart by month using Recharts.</div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">🔐</div>
+        <div class="fc-title">Secure Auth</div>
+        <div class="fc-desc">JWT-based authentication with bcrypt password hashing. Every piece of data is scoped to the logged-in user — no data leaks between accounts.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ ARCHITECTURE ══ -->
+  <section class="section" id="architecture">
+    <h2>🏗️ Architecture</h2>
+    <p>Three-layer architecture: a React SPA on Vercel, an Express REST API on Render, and a Supabase PostgreSQL database accessed through Prisma ORM.</p>
+
+    <div class="arch">
+      <div class="arch-label">Client Tier — Browser</div>
+      <div class="arch-row">
+        <div class="arch-box highlight">
+          <div>React + TypeScript + Vite</div>
+          <div class="sub">shadcn/ui · Tailwind CSS · Recharts · pdf-lib</div>
+        </div>
+        <div class="arch-arrow">↕</div>
+        <div class="arch-box">
+          <div>React Query (TanStack)</div>
+          <div class="sub">Async state, caching, mutations</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:rgba(20,184,166,0.7);font-size:22px;margin:6px 0;">⬇ HTTP / REST ⬇</div>
+
+      <div class="arch-label">Server Tier — Render</div>
+      <div class="arch-row">
+        <div class="arch-box highlight">
+          <div>Node.js + Express + TypeScript</div>
+          <div class="sub">JWT auth middleware · bcrypt · multer</div>
+        </div>
+        <div class="arch-arrow">↕</div>
+        <div class="arch-box">
+          <div>Prisma ORM</div>
+          <div class="sub">Type-safe queries · migrations · seed</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:rgba(20,184,166,0.7);font-size:22px;margin:6px 0;">⬇ Prisma Client ⬇</div>
+
+      <div class="arch-label">Data Tier — Supabase</div>
+      <div class="arch-row">
+        <div class="arch-box purple">
+          <div>PostgreSQL (Supabase)</div>
+          <div class="sub">Users · Clients · Projects · TimeEntries · Invoices · InvoiceItems</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <span class="info-icon">💡</span>
+      <div>PDF generation happens <strong>entirely in the browser</strong> using pdf-lib. The backend never needs to render or store PDF files — it just returns the invoice data as JSON, and the frontend renders the PDF and triggers a download. This keeps your Render plan free-tier friendly.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ FEATURE SCOPE ═ -->
+  <section class="section" id="features">
+    <h2>📋 Feature Scope</h2>
+
+    <div class="phase-card">
+      <div class="phase-header">
+        <div class="phase-dot mvp"></div>
+        <div class="ph-title">MVP — Ship This First</div>
+        <div class="ph-tag mvp">Build First</div>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>User registration and login (JWT + bcrypt, token stored in localStorage)</li>
+          <li>Protected routes — all dashboard pages require auth</li>
+          <li>Add / edit / delete clients (name, email, company, phone)</li>
+          <li>Add / edit / delete projects under a client (title, hourly rate, status)</li>
+          <li>Log time entries per project (description, hours, date)</li>
+          <li>Dashboard stats: total earnings, this month, outstanding invoices, active projects</li>
+          <li>Monthly earnings bar chart (Recharts BarChart)</li>
+          <li>Create invoice — select client, add line items (auto-calculate total)</li>
+          <li>Generate and download PDF invoice (pdf-lib, client-side)</li>
+          <li>Invoice list with status (Draft / Sent / Paid)</li>
+          <li>Mark invoice as Paid</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header">
+        <div class="phase-dot polish"></div>
+        <div class="ph-title">Polish — Add After MVP Works</div>
+        <div class="ph-tag polish">Round 2</div>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Auto-populate invoice line items from logged time entries (one-click "bill logged hours")</li>
+          <li>Invoice history / archive per client</li>
+          <li>Client detail page — projects list + invoices side by side</li>
+          <li>Profile & settings page (business name, logo upload, default currency)</li>
+          <li>Logo shown on generated PDF invoices</li>
+          <li>Toast notifications for all CRUD actions (shadcn/ui Sonner)</li>
+          <li>Responsive layout — usable on tablet</li>
+          <li>Invoice number auto-increment (INV-001, INV-002, ...)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header">
+        <div class="phase-dot stretch"></div>
+        <div class="ph-title">Stretch — If Time Allows</div>
+        <div class="ph-tag stretch">Bonus</div>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Email invoice to client directly (Resend or Nodemailer)</li>
+          <li>Recurring invoice templates</li>
+          <li>Project progress bar (% complete, milestone tracking)</li>
+          <li>Export all data as CSV</li>
+          <li>Dark mode toggle</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ TECH STACK ════ -->
+  <section class="section" id="stack">
+    <h2>🛠️ Tech Stack</h2>
+
+    <h3>Frontend</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Package</th><th>Purpose</th><th>Version</th></tr></thead>
+        <tbody>
+          <tr><td>React + TypeScript</td><td>UI framework with strict typing</td><td>React 18</td></tr>
+          <tr><td>Vite</td><td>Dev server + build tool (fast HMR)</td><td>5.x</td></tr>
+          <tr><td>React Router v6</td><td>Client-side routing + protected routes</td><td>6.x</td></tr>
+          <tr><td>TanStack Query v5</td><td>Server state management, caching, mutations</td><td>5.x</td></tr>
+          <tr><td>Tailwind CSS</td><td>Utility-first styling</td><td>3.x</td></tr>
+          <tr><td>shadcn/ui</td><td>Component library (Dialog, Table, Badge, Select, etc.)</td><td>latest</td></tr>
+          <tr><td>Recharts</td><td>Monthly earnings bar chart + pie chart</td><td>2.x</td></tr>
+          <tr><td>pdf-lib</td><td>Client-side PDF invoice generation</td><td>1.17</td></tr>
+          <tr><td>Axios</td><td>HTTP client with interceptors for JWT</td><td>1.x</td></tr>
+          <tr><td>React Hook Form + Zod</td><td>Form handling + schema validation</td><td>latest</td></tr>
+          <tr><td>date-fns</td><td>Date formatting throughout the app</td><td>3.x</td></tr>
+          <tr><td>Lucide React</td><td>Icons</td><td>latest</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Backend</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Package</th><th>Purpose</th><th>Version</th></tr></thead>
+        <tbody>
+          <tr><td>Node.js + Express</td><td>HTTP server + REST routing</td><td>Node 20 LTS</td></tr>
+          <tr><td>TypeScript</td><td>Type safety across the whole API layer</td><td>5.x</td></tr>
+          <tr><td>Prisma ORM</td><td>Type-safe DB access, migrations, seed script</td><td>5.x</td></tr>
+          <tr><td>jsonwebtoken</td><td>Sign and verify JWT tokens</td><td>9.x</td></tr>
+          <tr><td>bcrypt</td><td>Hash user passwords before storing</td><td>5.x</td></tr>
+          <tr><td>cors</td><td>Allow Vercel frontend to call Render backend</td><td>2.x</td></tr>
+          <tr><td>dotenv</td><td>Load .env variables (DATABASE_URL, JWT_SECRET)</td><td>16.x</td></tr>
+          <tr><td>zod</td><td>Request body validation middleware</td><td>3.x</td></tr>
+          <tr><td>tsx / ts-node</td><td>Run TypeScript directly in dev without compile</td><td>latest</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Infrastructure</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Service</th><th>What it hosts</th><th>Plan</th></tr></thead>
+        <tbody>
+          <tr><td>Vercel</td><td>React frontend (automatic deploys from GitHub)</td><td>Free</td></tr>
+          <tr><td>Render</td><td>Node.js/Express backend (Web Service)</td><td>Free (spins down after inactivity)</td></tr>
+          <tr><td>Supabase</td><td>PostgreSQL database (Prisma connects via connection string)</td><td>Free (500 MB)</td></tr>
+          <tr><td>GitHub Actions</td><td>CI — lint + typecheck on every push to main</td><td>Free</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ SCHEMA ════════ -->
+  <section class="section" id="schema">
+    <h2>🗄️ Database Schema (Prisma)</h2>
+    <p>Six models covering the full domain. Every model except <code>InvoiceItem</code> has a <code>createdAt</code> timestamp. All user data is isolated by <code>userId</code> — never expose cross-user data.</p>
+
+    <div class="schema-block">
+      <pre><code>// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  businessName String?
+  logoUrl      String?
+  currency     String    @default("USD")
+  createdAt    DateTime  @default(now())
+  clients      Client[]
+  invoices     Invoice[]
+}
+
+model Client {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  name      String
+  email     String?
+  company   String?
+  phone     String?
+  createdAt DateTime  @default(now())
+  projects  Project[]
+  invoices  Invoice[]
+}
+
+model Project {
+  id          String      @id @default(cuid())
+  clientId    String
+  client      Client      @relation(fields: [clientId], references: [id])
+  title       String
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+  hourlyRate  Float       @default(0)
+  totalBudget Float?
+  createdAt   DateTime    @default(now())
+  timeEntries TimeEntry[]
+}
+
+enum ProjectStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+model TimeEntry {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  description String
+  hours       Float
+  date        DateTime
+  createdAt   DateTime @default(now())
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  clientId      String
+  client        Client        @relation(fields: [clientId], references: [id])
+  invoiceNumber String        @unique
+  status        InvoiceStatus @default(DRAFT)
+  totalAmount   Float
+  dueDate       DateTime
+  issuedAt      DateTime      @default(now())
+  paidAt        DateTime?
+  notes         String?
+  items         InvoiceItem[]
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id])
+  description String
+  quantity    Float
+  unitPrice   Float
+  total       Float   // quantity * unitPrice, stored for easy querying
+}</code></pre>
+    </div>
+
+    <div class="warn">
+      <span class="info-icon">⚠️</span>
+      <div>When querying invoices for the dashboard stats, always filter by <code>userId</code> via a join through <code>User</code>. Never trust a raw <code>clientId</code> from the request body — always verify that the client belongs to the authenticated user before associating data.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ ENDPOINTS ════ -->
+  <section class="section" id="endpoints">
+    <h2>🔌 API Endpoints</h2>
+    <p>All routes under <code>/api</code> except <code>/api/auth</code> require a valid <code>Authorization: Bearer &lt;token&gt;</code> header. The auth middleware attaches <code>req.userId</code> to every request.</p>
+
+    <div class="endpoint-group">
+      <div class="endpoint-group-title">🔐 Auth</div>
+      <div class="endpoint">
+        <span class="method post">POST</span>
+        <div><div class="endpoint-path">/api/auth/register</div><div class="endpoint-desc">Create account. Body: { name, email, password }. Returns JWT token.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method post">POST</span>
+        <div><div class="endpoint-path">/api/auth/login</div><div class="endpoint-desc">Login. Body: { email, password }. Returns JWT token + user object.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <div><div class="endpoint-path">/api/auth/me</div><div class="endpoint-desc">Returns currently authenticated user's profile. Requires auth.</div></div>
+      </div>
+    </div>
+
+    <div class="endpoint-group">
+      <div class="endpoint-group-title">📊 Dashboard</div>
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <div><div class="endpoint-path">/api/dashboard/stats</div><div class="endpoint-desc">Returns: totalEarnings, thisMonthEarnings, outstandingAmount, activeProjects, totalClients, monthlyData[] (12 months for chart).</div></div>
+      </div>
+    </div>
+
+    <div class="endpoint-group">
+      <div class="endpoint-group-title">👥 Clients</div>
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <div><div class="endpoint-path">/api/clients</div><div class="endpoint-desc">List all clients for the logged-in user. Optional ?search= query param.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method post">POST</span>
+        <div><div class="endpoint-path">/api/clients</div><div class="endpoint-desc">Create a client. Body: { name, email?, company?, phone? }.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <div><div class="endpoint-path">/api/clients/:id</div><div class="endpoint-desc">Get a single client + all their projects + recent invoices.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method put">PUT</span>
+        <div><div class="endpoint-path">/api/clients/:id</div><div class="endpoint-desc">Update client details.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method delete">DELETE</span>
+        <div><div class="endpoint-path">/api/clients/:id</div><div class="endpoint-desc">Delete client and cascade-delete all their projects, time entries, invoices.</div></div>
+      </div>
+    </div>
+
+    <div class="endpoint-group">
+      <div class="endpoint-group-title">📁 Projects</div>
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <div><div class="endpoint-path">/api/clients/:clientId/projects</div><div class="endpoint-desc">List all projects under a client. Returns project + aggregated hours.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method post">POST</span>
+        <div><div class="endpoint-path">/api/clients/:clientId/projects</div><div class="endpoint-desc">Create project. Body: { title, description?, hourlyRate, totalBudget? }.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <div><div class="endpoint-path">/api/projects/:id</div><div class="endpoint-desc">Get project detail + time entries + total hours billed.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method put">PUT</span>
+        <div><div class="endpoint-path">/api/projects/:id</div><div class="endpoint-desc">Update project. Body: { title?, description?, hourlyRate?, status?, totalBudget? }.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method delete">DELETE</span>
+        <div><div class="endpoint-path">/api/projects/:id</div><div class="endpoint-desc">Delete project and cascade-delete all time entries.</div></div>
+      </div>
+    </div>
+
+    <div class="endpoint-group">
+      <div class="endpoint-group-title">⏱️ Time Entries</div>
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <div><div class="endpoint-path">/api/projects/:projectId/time-entries</div><div class="endpoint-desc">List all time entries for a project, ordered by date desc.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method post">POST</span>
+        <div><div class="endpoint-path">/api/projects/:projectId/time-entries</div><div class="endpoint-desc">Log time. Body: { description, hours, date }.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method put">PUT</span>
+        <div><div class="endpoint-path">/api/time-entries/:id</div><div class="endpoint-desc">Update time entry.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method delete">DELETE</span>
+        <div><div class="endpoint-path">/api/time-entries/:id</div><div class="endpoint-desc">Delete time entry.</div></div>
+      </div>
+    </div>
+
+    <div class="endpoint-group">
+      <div class="endpoint-group-title">🧾 Invoices</div>
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <div><div class="endpoint-path">/api/invoices</div><div class="endpoint-desc">List all invoices for user. Optional ?status= and ?clientId= filters.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method post">POST</span>
+        <div><div class="endpoint-path">/api/invoices</div><div class="endpoint-desc">Create invoice. Body: { clientId, dueDate, notes?, items: [{ description, quantity, unitPrice }] }. Auto-assigns invoiceNumber and computes totalAmount.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <div><div class="endpoint-path">/api/invoices/:id</div><div class="endpoint-desc">Get invoice detail with all items and client info (for PDF generation).</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method put">PUT</span>
+        <div><div class="endpoint-path">/api/invoices/:id</div><div class="endpoint-desc">Update invoice status or details. Body: { status?, dueDate?, notes?, items? }.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method patch">PATCH</span>
+        <div><div class="endpoint-path">/api/invoices/:id/mark-paid</div><div class="endpoint-desc">Set invoice status to PAID and record paidAt timestamp.</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method delete">DELETE</span>
+        <div><div class="endpoint-path">/api/invoices/:id</div><div class="endpoint-desc">Delete invoice and all its items. Only allow if status is DRAFT.</div></div>
+      </div>
+    </div>
+
+    <div class="endpoint-group">
+      <div class="endpoint-group-title">⚙️ Settings</div>
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <div><div class="endpoint-path">/api/settings</div><div class="endpoint-desc">Return user profile (name, businessName, currency, logoUrl).</div></div>
+      </div>
+      <div class="endpoint">
+        <span class="method put">PUT</span>
+        <div><div class="endpoint-path">/api/settings</div><div class="endpoint-desc">Update user settings. Body: { name?, businessName?, currency?, logoUrl? }.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ BUILD ORDER ══ -->
+  <section class="section" id="build-order">
+    <h2>🔨 Build Order (10 Steps)</h2>
+    <ul class="build-list">
+      <li>
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Backend scaffold + auth endpoints</div>
+          <div class="step-desc">Init Express + TypeScript project. Set up Prisma, connect to Supabase. Implement POST /auth/register and POST /auth/login with bcrypt + JWT. Write the auth middleware that reads the Bearer token and attaches userId to req. Test with Postman before touching the frontend.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Frontend scaffold + auth pages</div>
+          <div class="step-desc">Init React + TS + Vite. Install Tailwind, shadcn/ui, React Router, TanStack Query, Axios. Build Login and Register pages. Set up Axios interceptor that attaches Authorization header from localStorage. Implement protected route wrapper component.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Client CRUD (backend + frontend)</div>
+          <div class="step-desc">Build all 5 client endpoints. On the frontend: Clients list page with search, Add/Edit client dialog (shadcn Dialog + React Hook Form), delete confirmation dialog. Use TanStack Query useQuery + useMutation for all API calls.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">Project CRUD (backend + frontend)</div>
+          <div class="step-desc">Build project endpoints. Client detail page: shows client info + projects list + empty invoice section. Add/Edit project form. Project status badge (Active = green, Paused = amber, Completed = grey).</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="step-title">Time logging (backend + frontend)</div>
+          <div class="step-desc">Build time entry endpoints. Project detail page: time entries table with add/edit/delete. Show total hours and calculated earnings (hours × hourly rate) in project header. Use date-fns for date formatting.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <div class="step-title">Dashboard stats + Recharts</div>
+          <div class="step-desc">Build /api/dashboard/stats. Calculate: totalEarnings (sum of PAID invoices), thisMonthEarnings, outstandingAmount (SENT invoices), activeProjects count. Build 12-month array for bar chart. On frontend: 4 stat cards + BarChart from Recharts.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">7</div>
+        <div class="step-body">
+          <div class="step-title">Invoice backend (create + manage)</div>
+          <div class="step-desc">Build all invoice endpoints. Auto-increment invoice number: query max existing number and increment. Validate that clientId belongs to the user. InvoiceItem totals calculated server-side. Invoice list with status filter tabs.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">8</div>
+        <div class="step-body">
+          <div class="step-title">PDF invoice generator (client-side pdf-lib)</div>
+          <div class="step-desc">Fetch GET /api/invoices/:id — returns full invoice + client + items. Use pdf-lib to build the PDF: header with business name, client info block, itemised table, total row, due date + notes. Trigger download via URL.createObjectURL. Test across Chrome, Firefox, Safari.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">9</div>
+        <div class="step-body">
+          <div class="step-title">Settings page + logo on PDF</div>
+          <div class="step-desc">Settings page with name, business name, currency selector. Logo upload — store as base64 string in User.logoUrl (keep small: &lt;50KB). Pull logo into pdf-lib when generating invoices. Update the PDF template to include logo in top-left corner.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">10</div>
+        <div class="step-body">
+          <div class="step-title">Deploy + GitHub Actions CI</div>
+          <div class="step-desc">Deploy backend to Render (set DATABASE_URL, JWT_SECRET env vars). Deploy frontend to Vercel (set VITE_API_URL). Add CORS origin whitelist on backend. Set up GitHub Actions: lint + tsc --noEmit on push to main. Test the full flow end-to-end in production.</div>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ DESIGN SCREENS -->
+  <section class="section" id="design-screens">
+    <h2>🎨 Claude Design — Screens to Design</h2>
+    <p>Open <a href="https://claude.ai/design" target="_blank">claude.ai/design</a> and start a new canvas for each screen below. Once each design is done, use "Export to Claude Code" to get a handoff bundle, then paste into Claude Code.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Screen</th><th>Priority</th><th>Key Elements</th></tr></thead>
+        <tbody>
+          <tr><td>Dashboard</td><td>🔴 First</td><td>4 stat cards, monthly bar chart, recent invoice list</td></tr>
+          <tr><td>Clients List</td><td>🔴 First</td><td>Search bar, client cards/table, Add Client button</td></tr>
+          <tr><td>Client Detail</td><td>🔴 First</td><td>Client header, projects list, invoices list tabs</td></tr>
+          <tr><td>Invoice Generator</td><td>🔴 First</td><td>Client selector, line item table, totals, Generate PDF btn</td></tr>
+          <tr><td>Invoice List</td><td>🟡 Second</td><td>Status tabs (All/Draft/Sent/Paid), sortable table</td></tr>
+          <tr><td>Time Log Page</td><td>🟡 Second</td><td>Project selector, entry table, total hours card</td></tr>
+          <tr><td>Settings</td><td>🟢 Third</td><td>Profile form, logo uploader, currency selector</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ CLAUDE CODE PROMPT -->
+  <section class="section" id="prompt-claude-code">
+    <h2>🤖 Claude Code Prompt</h2>
+    <p>Copy the entire block below and paste it as your first message when you open Claude Code for this project. This sets up the full context so Claude Code knows exactly what to build without you re-explaining it each session.</p>
+
+    <div class="prompt-block">
+      <div class="prompt-label">📋 Claude Code — Project 4: Freelancer Client Portal</div>
+      <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+      <pre id="cc-prompt">PROJECT OVERVIEW
+================
+Project name: freelancer-portal
+Type: Full-Stack SaaS Web App
+My role: Solo developer (full-stack, no team)
+Repo: github.com/[your-username]/freelancer-portal
+Monorepo structure:
+  /client  → React + TypeScript + Vite frontend
+  /server  → Node.js + Express + TypeScript backend
+
+WHAT IT DOES
+============
+A private dashboard for freelancers to manage their entire client workflow in one place:
+- Manage clients (add / edit / delete with contact info)
+- Create projects under each client with hourly rate and status
+- Log time entries per project (description, hours, date)
+- View dashboard with total earnings, this month's revenue, outstanding amount, active projects — visualised with a Recharts monthly bar chart
+- Create invoices with line items, auto-calculate totals
+- Generate and download a professional PDF invoice in the browser using pdf-lib (no server rendering required)
+- Mark invoices as Sent or Paid
+- Settings page to update business name, logo, and currency
+
+TECH STACK
+==========
+Frontend (/client):
+  - React 18 + TypeScript
+  - Vite 5 (dev server + build)
+  - React Router v6 (client-side routing, protected routes)
+  - TanStack Query v5 (server state, caching, mutations)
+  - Tailwind CSS 3 + shadcn/ui (components)
+  - Recharts (dashboard bar chart)
+  - pdf-lib (client-side PDF invoice generation)
+  - Axios (HTTP client with JWT interceptor)
+  - React Hook Form + Zod (forms + validation)
+  - date-fns (date formatting)
+  - Lucide React (icons)
+
+Backend (/server):
+  - Node.js 20 LTS + Express + TypeScript
+  - Prisma ORM 5 (queries + migrations)
+  - PostgreSQL via Supabase (free tier)
+  - jsonwebtoken (JWT sign + verify)
+  - bcrypt (password hashing, 10 rounds)
+  - cors (whitelist Vercel frontend origin)
+  - zod (request body validation)
+  - dotenv
+
+Environment variables needed:
+  Server: DATABASE_URL, JWT_SECRET, PORT, FRONTEND_URL
+  Client: VITE_API_URL
+
+PAGES / FEATURES
+================
+1. /login — Email + password login form. On success: store JWT in localStorage, redirect to /dashboard.
+2. /register — Name, email, password, confirm password. Same flow as login.
+3. /dashboard — 4 stat cards (Total Earnings, This Month, Outstanding, Active Projects) + BarChart (monthly earnings, 12 months) + Recent Invoices table (last 5).
+4. /clients — Client list with search bar. Each row: name, company, email, project count. "Add Client" button opens a shadcn Dialog with a form.
+5. /clients/:id — Client detail page. Two tabs: Projects | Invoices. Projects tab shows all projects for this client as cards with status badge and total hours. Invoices tab shows invoices for this client.
+6. /clients/:id/projects/:projectId — Project detail. Header: title, client name, hourly rate, status. Time entries table: date, description, hours, actions. "Log Time" button opens form. Footer: total hours + total earnings for the project.
+7. /invoices — Invoice list. Status filter tabs: All / Draft / Sent / Paid / Overdue. Table columns: invoice #, client, amount, status badge, due date, actions (view, mark paid, download PDF, delete).
+8. /invoices/new — Create invoice page. Client selector (dropdown of all clients), line items table (description, qty, unit price, row total — add/remove rows), total display, due date picker, notes textarea. "Generate & Download PDF" button.
+9. /settings — Profile form: display name, business name, default currency. Logo uploader (store as base64 in User.logoUrl, max 50KB). Save button.
+
+Auth: All routes except /login and /register are protected. ProtectedRoute component reads JWT from localStorage; if missing or expired, redirect to /login.
+
+DESIGN & STYLE
+==============
+Theme: Clean, professional SaaS. Dark sidebar (#0f172a), white main content area. Accent: Teal (#14b8a6) for primary buttons and active nav links. Neutral grays for text and borders.
+Typography: Inter or system-ui, 14-15px body, 24-28px headings.
+Components: shadcn/ui for Dialog, Select, Badge, Button, Table, Tabs, Sonner (toast notifications), Tooltip. Custom stat cards with icon + number + label. Invoice status badges: Draft=gray, Sent=blue, Paid=green, Overdue=red.
+Responsive: Desktop-first. Sidebar collapses to hamburger below 768px (or hide with a toggle). Dashboard stat grid goes 4→2→1 column.
+
+TEAM STRUCTURE
+==============
+Solo developer. No code review gates. Merge directly to main when features are stable.
+
+GIT & WORKFLOW
+==============
+Branching strategy: feature branches off main. Branch naming: feature/auth, feature/clients, feature/projects, feature/time-entries, feature/invoices, feature/dashboard, feature/pdf, feature/settings.
+Commit format: conventional commits — feat:, fix:, chore:, refactor:.
+PR process: none (solo). Merge to main when local smoke test passes.
+.gitignore: node_modules, dist, .env, *.local, prisma/dev.db.
+
+CI/CD
+=====
+GitHub Actions (.github/workflows/ci.yml):
+  - Trigger: push and pull_request on main
+  - Steps: checkout → setup Node 20 → install deps (both /client and /server) → run tsc --noEmit on both → run eslint on both
+  - No automated deploy (manual push to Vercel/Render is fine for now)
+
+Frontend deploy: Vercel. Connect GitHub repo, set root to /client, set VITE_API_URL env var to Render backend URL. Auto-deploy on push to main.
+Backend deploy: Render Web Service. Connect GitHub repo, set root to /server. Set DATABASE_URL and JWT_SECRET env vars. Build command: npm install && npx prisma generate && npm run build. Start command: node dist/index.js.
+
+TIMELINE & PRIORITY
+===================
+Step 1 (Day 1–2):   Backend scaffold + Prisma schema + /auth endpoints + auth middleware
+Step 2 (Day 2–3):   Frontend scaffold + Login/Register pages + protected route wrapper
+Step 3 (Day 4–5):   Client CRUD (backend + frontend: list page + add/edit/delete dialogs)
+Step 4 (Day 5–6):   Project CRUD (backend + frontend: client detail page with projects)
+Step 5 (Day 6–7):   Time entry CRUD (backend + frontend: project detail page with time log)
+Step 6 (Day 7–8):   Dashboard stats endpoint + frontend dashboard page with Recharts
+Step 7 (Day 8–9):   Invoice CRUD backend (create, list, update status, delete)
+Step 8 (Day 9–10):  Invoice frontend + pdf-lib PDF generation + download flow
+Step 9 (Day 11):    Settings page + logo on PDF
+Step 10 (Day 12):   Deploy to Vercel + Render + GitHub Actions CI + end-to-end test
+
+CONSTRAINTS & NOTES
+===================
+- Database is Supabase PostgreSQL. Use the connection pooler URL (port 6543) for Prisma in production to avoid connection limits on the free tier. Direct URL (port 5432) for migrations only.
+- PDF generation is entirely client-side (pdf-lib in the browser). Never send invoice data to a PDF rendering service.
+- JWT expiry: 7 days. No refresh token for MVP — force re-login after expiry.
+- All monetary values stored as Float in PostgreSQL (this is fine for a portfolio project — in production you'd use Decimal or store in cents).
+- Invoice number format: INV-001, INV-002 etc. On create: query MAX(invoiceNumber) for the user, extract the number, increment by 1, zero-pad to 3 digits.
+- Cascade deletes: deleting a client should delete all their projects, time entries, invoices, and invoice items. Set up Prisma onDelete: Cascade on all foreign keys.
+- CORS: backend must whitelist the Vercel frontend URL. Use an env var FRONTEND_URL for this.
+- Logo stored as base64 in the database (acceptable for portfolio, max 50KB enforced on upload).
+
+WHAT I NEED FROM YOU NOW
+========================
+Start with Step 1: scaffold the /server directory.
+
+1. Initialize a Node.js + TypeScript project in /server with the package.json, tsconfig.json, and folder structure:
+   /server
+     /src
+       /routes       (auth.ts, clients.ts, projects.ts, timeEntries.ts, invoices.ts, dashboard.ts, settings.ts)
+       /middleware   (auth.ts — JWT verification)
+       /lib          (prisma.ts — Prisma client singleton)
+       index.ts      (Express app setup, CORS, routes registration)
+     prisma/
+       schema.prisma
+     .env.example
+     package.json
+     tsconfig.json
+
+2. Write the complete prisma/schema.prisma with all 6 models (User, Client, Project, TimeEntry, Invoice, InvoiceItem) and both enums (ProjectStatus, InvoiceStatus) exactly as described above.
+
+3. Write src/index.ts with Express setup, CORS using FRONTEND_URL env var, and route stubs registered.
+
+4. Write src/middleware/auth.ts — reads Authorization header, verifies JWT, attaches req.userId: string to the request, returns 401 if missing or invalid.
+
+5. Write src/routes/auth.ts — POST /register (hash password, create User, return JWT) and POST /login (verify password, return JWT + user). Use zod for input validation.
+
+6. Write src/lib/prisma.ts — singleton Prisma client.
+
+7. Provide the exact terminal commands to: install all dependencies, run prisma generate, run prisma migrate dev --name init, and start the dev server with tsx watch src/index.ts.</pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ CLAUDE DESIGN PROMPTS -->
+  <section class="section" id="prompt-design-dashboard">
+    <h2>🎨 Claude Design Prompts</h2>
+    <p>Use these one at a time in <a href="https://claude.ai/design" target="_blank">claude.ai/design</a>. Open a new canvas for each screen. Once designed, click "Export" → "Copy to Claude Code".</p>
+
+    <!-- DASHBOARD -->
+    <div class="screen-card">
+      <div class="screen-header">
+        <div class="screen-num">1</div>
+        <div class="screen-title">Dashboard — Earnings Overview</div>
+      </div>
+      <div class="screen-body">
+        <div class="prompt-block teal">
+          <div class="prompt-label">Claude Design — Dashboard</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          <pre>WHO USES IT
+A freelancer who just logged in and wants a quick pulse on their business — how much they've earned, what's unpaid, and whether revenue is trending up.
+
+WHAT THIS SCREEN DOES
+The home screen after login. Read-only financial overview. No editing happens here — it's a snapshot that links out to deeper sections.
+
+CONTENT & LAYOUT
+Needs to show four key numbers: total all-time earnings, this month's earnings, outstanding (unpaid) invoice total, and active project count. Each number needs a clear label so the user knows what they're looking at.
+
+Below the numbers: a monthly revenue chart covering the last 12 months so the user can see trends over time.
+
+Below the chart: a short list of recent invoices (last 5) showing invoice number, client name, amount, status, and due date — with a way to view all invoices.
+
+The app needs persistent navigation visible on every screen: links to Dashboard, Clients, Invoices, and Settings, plus the user's name and a way to log out.
+
+SIZE
+Desktop, 1280×900px.
+
+DATA
+Total Earnings: $24,850 | This Month (June): $3,200 | Outstanding: $1,750 | Active Projects: 4
+Monthly data: Jan $1,200 · Feb $980 · Mar $1,650 · Apr $2,100 · May $2,800 · Jun $3,200
+Recent invoices: INV-012 / Acme Corp / $1,200 / Sent / Jun 30 · INV-011 / TechBrand / $800 / Paid / Jun 15 · INV-010 / Startup X / $550 / Draft / Jul 5 · INV-009 / Acme Corp / $1,100 / Paid / May 31 · INV-008 / TechBrand / $650 / Overdue / May 20</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENTS LIST -->
+    <div class="screen-card" id="prompt-design-clients">
+      <div class="screen-header">
+        <div class="screen-num">2</div>
+        <div class="screen-title">Clients — List Page</div>
+      </div>
+      <div class="screen-body">
+        <div class="prompt-block teal">
+          <div class="prompt-label">Claude Design — Clients List</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          <pre>WHO USES IT
+A freelancer who manages multiple clients and needs to find one quickly, check their status, or add a new one.
+
+WHAT THIS SCREEN DOES
+A searchable list of all clients. Clicking a client navigates to their detail page. The user can also add a new client and edit or delete existing ones from this screen.
+
+CONTENT & LAYOUT
+Needs a search input so the freelancer can filter clients by name or company. Each client entry should show: name, company, email, how many projects they have, and the total amount billed to them. The user needs a way to add a new client (opens a form), edit an existing client, and delete one.
+
+The add/edit form needs fields for: full name, company name, email address, and phone number.
+
+Also needs an empty state for when there are no clients yet.
+
+SIZE
+Desktop, 1280×900px.
+
+DATA
+4 clients:
+  Acme Corp | Acme Corporation | sarah@acme.com | 3 projects | $4,200 billed
+  TechBrand Studio | TechBrand | hello@techbrand.io | 2 projects | $2,800 billed
+  Startup X | Startup X Inc | no email | 1 project | $550 billed
+  Personal Blog | no company | blogger@gmail.com | 1 project | $0 billed</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENT DETAIL -->
+    <div class="screen-card" id="prompt-design-client-detail">
+      <div class="screen-header">
+        <div class="screen-num">3</div>
+        <div class="screen-title">Client Detail — Projects & Invoices</div>
+      </div>
+      <div class="screen-body">
+        <div class="prompt-block teal">
+          <div class="prompt-label">Claude Design — Client Detail</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          <pre>WHO USES IT
+A freelancer who has clicked into one specific client to see everything related to that client in one place.
+
+WHAT THIS SCREEN DOES
+The client's hub page. Shows the client's contact info at the top, then their projects and their invoices. The user can add a new project, create a new invoice for this client, or navigate into a specific project's detail.
+
+CONTENT & LAYOUT
+At the top: the client's name, company, email, and phone. Actions available from this page: edit the client's info, create a new invoice for this client.
+
+Below: two sections — Projects and Invoices. The user needs to be able to switch between them.
+
+Projects section shows each project's title, status (Active / Paused / Completed), hourly rate, total hours logged, and calculated earnings. The user can add a new project and click into any project for details.
+
+The add/edit project form needs: title, optional description, hourly rate, status selector, optional total budget.
+
+Invoices section shows each invoice's number, amount, status, due date, and actions (download PDF, mark as paid, delete).
+
+SIZE
+Desktop, 1280×900px.
+
+DATA
+Client: Acme Corp | Acme Corporation | sarah@acme.com | +1 (555) 010-1234
+Projects: "Website Redesign" ACTIVE $75/hr 22 hrs $1,650 · "SEO Audit" COMPLETED $60/hr 8 hrs $480 · "Monthly Retainer" ACTIVE $100/hr 6 hrs $600
+Invoices: INV-012 $1,200 Sent Jun 30 · INV-009 $1,100 Paid May 31</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVOICE GENERATOR -->
+    <div class="screen-card" id="prompt-design-invoice-gen">
+      <div class="screen-header">
+        <div class="screen-num">4</div>
+        <div class="screen-title">Invoice Generator — Create & Download</div>
+      </div>
+      <div class="screen-body">
+        <div class="prompt-block teal">
+          <div class="prompt-label">Claude Design — Invoice Generator</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          <pre>WHO USES IT
+A freelancer who has finished a piece of work and needs to bill their client. They want the process to be fast: pick the client, describe the work, and get a PDF out.
+
+WHAT THIS SCREEN DOES
+A full-page form for creating a new invoice. The user fills in who they're billing, what for, and at what price — then downloads a professional PDF. The total auto-calculates as line items are added.
+
+CONTENT & LAYOUT
+The user needs to specify: which client they're billing (selected from their client list), the invoice date, the due date, and an auto-assigned invoice number.
+
+The core of the form is the line items — each item has a description, quantity, unit price, and a calculated row total. The user needs to add and remove line items freely. The subtotal updates automatically.
+
+There's also an optional notes field for payment instructions.
+
+Two actions at the end: save as a draft (to come back to later), and generate and download the PDF (the main action).
+
+It would be helpful to show the user a preview of what the invoice will look like as they fill it in, so they can see the final output before downloading.
+
+SIZE
+Desktop, 1280×900px.
+
+DATA
+Client: Acme Corp · Invoice #: INV-013 · Date: Jun 8, 2026 · Due: Jul 8, 2026
+Line items: "Website homepage redesign" qty 1 @ $1,200 = $1,200 · "Mobile responsiveness fixes" qty 3 @ $75 = $225
+Total: $1,425 · Notes: "Payment via bank transfer. Account details on file."</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVOICE LIST -->
+    <div class="screen-card" id="prompt-design-invoice-list">
+      <div class="screen-header">
+        <div class="screen-num">5</div>
+        <div class="screen-title">Invoice List — All Invoices</div>
+      </div>
+      <div class="screen-body">
+        <div class="prompt-block teal">
+          <div class="prompt-label">Claude Design — Invoice List</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          <pre>WHO USES IT
+A freelancer scanning their invoice history to check what's been paid, what's outstanding, and what's overdue — and taking action directly from the list.
+
+WHAT THIS SCREEN DOES
+A filterable list of all invoices across all clients. The user needs to be able to see the status of every invoice at a glance and act on them without navigating away.
+
+CONTENT & LAYOUT
+The user needs to filter invoices by status: All, Draft, Sent, Paid, Overdue. A summary of the filtered results (count, total amount, outstanding amount) is helpful context.
+
+Each invoice entry needs to show: invoice number, client name, issue date, due date, amount, and status. The status needs to be visually distinct so overdue and unpaid invoices stand out immediately.
+
+Per-invoice actions: download the PDF, mark as paid (for invoices that have been sent), and delete (only for drafts). These should be accessible without navigating into the invoice.
+
+A button to create a new invoice should be easy to reach from this page.
+
+SIZE
+Desktop, 1280×900px.
+
+DATA
+INV-013 | Acme Corp | Jun 8 | Jul 8 | $1,425 | Draft
+INV-012 | Acme Corp | May 28 | Jun 28 | $1,200 | Sent
+INV-011 | TechBrand | May 15 | Jun 15 | $800 | Paid
+INV-010 | Startup X | May 1 | Jun 1 | $550 | Draft
+INV-009 | Acme Corp | Apr 28 | May 28 | $1,100 | Paid
+INV-008 | TechBrand | Apr 10 | May 10 | $650 | Overdue
+INV-007 | Personal Blog | Mar 20 | Apr 20 | $325 | Paid
+INV-006 | Startup X | Mar 5 | Apr 5 | $800 | Paid</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIME LOG -->
+    <div class="screen-card" id="prompt-design-timelog">
+      <div class="screen-header">
+        <div class="screen-num">6</div>
+        <div class="screen-title">Time Log — Project Time Tracker</div>
+      </div>
+      <div class="screen-body">
+        <div class="prompt-block teal">
+          <div class="prompt-label">Claude Design — Time Log</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          <pre>WHO USES IT
+A freelancer looking at a specific project they're actively working on. They want to see how many hours they've logged, add new time entries, and correct or delete old ones.
+
+WHAT THIS SCREEN DOES
+The detail page for a single project. It shows the project's metadata and a log of all the time the freelancer has worked on it. This is where they track their hours day by day.
+
+CONTENT & LAYOUT
+At the top: the project name, which client it belongs to (with a way to get back to that client), the project's current status, the hourly rate, total hours logged so far, and total earnings from this project.
+
+A prominent action to log new time.
+
+Below: the full list of time entries for this project, each showing the date worked, a description of what was done, how many hours, and the dollar value of those hours (hours × rate). The user needs to be able to edit or delete any entry. The total hours and earnings should be visible as a running summary.
+
+The log time form needs: date, description of work, and number of hours. It should show the user a calculated earnings preview as they enter hours (hours × rate = $X).
+
+SIZE
+Desktop, 1280×900px.
+
+DATA
+Project: "Website Redesign" | Client: Acme Corp | Status: ACTIVE | $75/hr | 22 hrs total | $1,650 earned
+5 recent entries:
+  Jun 7 | Final responsive fixes for mobile nav | 2.5 hrs | $187.50
+  Jun 5 | Homepage hero section animation | 3 hrs | $225.00
+  Jun 3 | Client feedback revisions round 2 | 2 hrs | $150.00
+  Jun 1 | About page layout + team section | 4 hrs | $300.00
+  May 30 | Initial wireframe and component setup | 4 hrs | $300.00</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="screen-card" id="prompt-design-settings">
+      <div class="screen-header">
+        <div class="screen-num">7</div>
+        <div class="screen-title">Settings — Profile & Preferences</div>
+      </div>
+      <div class="screen-body">
+        <div class="prompt-block teal">
+          <div class="prompt-label">Claude Design — Settings</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          <pre>WHO USES IT
+A freelancer configuring their account — either setting it up for the first time or updating their business details. The main motivation is making sure their name, logo, and preferences show up correctly on PDF invoices.
+
+WHAT THIS SCREEN DOES
+A settings page where the freelancer personalises their account and sets invoice defaults. Changes are saved explicitly (not auto-saved), and the user should know whether they have unsaved changes.
+
+CONTENT & LAYOUT
+Two areas of settings:
+
+Profile & business info: the user's display name, their business name (this appears on PDF invoices), their email address (read-only — they can't change it), and a logo they can upload (also appears on PDF invoices — max 50KB).
+
+Invoice preferences: default currency (USD, EUR, GBP, SGD, AUD, MYR), invoice number prefix (default "INV" — so invoices are numbered INV-001, INV-002, etc.), default payment terms (Net 7 / 14 / 30 / 60 — sets the due date automatically on new invoices), and default notes (pre-fills the notes field on every new invoice, e.g. bank transfer details).
+
+A save action that confirms success and warns when there are unsaved changes.
+
+SIZE
+Desktop, 1280×900px.
+
+DATA
+Display Name: Ryan Tanjaya | Business Name: Ryan Dev Studio | Email: ryantanjayachen@gmail.com (read-only)
+Currency: USD | Prefix: INV | Terms: Net 30 | Default Notes: "Please transfer payment to: [Bank details]"</pre>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════ DEPLOYMENT ════ -->
+  <section class="section" id="deploy">
+    <h2>🚀 Deployment</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Service</th><th>What to do</th><th>Env Vars to set</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Supabase</td>
+            <td>Create project → Project Settings → Database → copy Connection String (pooler, port 6543 for app; port 5432 for migrations only)</td>
+            <td>Used in DATABASE_URL</td>
+          </tr>
+          <tr>
+            <td>Render (backend)</td>
+            <td>New Web Service → connect GitHub → root: /server → Build: <code>npm i && npx prisma generate && npm run build</code> → Start: <code>node dist/index.js</code></td>
+            <td>DATABASE_URL, JWT_SECRET, FRONTEND_URL, PORT</td>
+          </tr>
+          <tr>
+            <td>Vercel (frontend)</td>
+            <td>Import repo → root: /client → Framework preset: Vite → auto-deploy on push to main</td>
+            <td>VITE_API_URL (your Render URL)</td>
+          </tr>
+          <tr>
+            <td>GitHub Actions</td>
+            <td>Add .github/workflows/ci.yml — lint + typecheck on push to main. No secrets needed for CI-only.</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="warn">
+      <span class="info-icon">⚠️</span>
+      <div><strong>Render free tier cold starts:</strong> The backend spins down after 15 minutes of inactivity. First request after idle takes ~30s. For portfolio purposes this is fine — just note it in your case study.</div>
+    </div>
+
+    <div class="tip">
+      <span class="info-icon">💡</span>
+      <div><strong>Prisma + Supabase connection tip:</strong> Use the pooler connection string (port 6543) in your app's <code>DATABASE_URL</code>. For <code>prisma migrate deploy</code> (run once on Render startup or manually), use the direct connection string (port 5432). Set a separate <code>DIRECT_URL</code> env var in schema.prisma's datasource if needed.</div>
+    </div>
+  </section>
+
+</main>
+
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// Scroll-to-top visibility
+const st = document.getElementById('scrollTop');
+window.addEventListener('scroll', () => {
+  st.classList.toggle('visible', window.scrollY > 300);
+});
+
+// Active nav link highlighting
+const links = document.querySelectorAll('.nav-link');
+const sections = document.querySelectorAll('section[id], div[id]');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector('.nav-link[href="#' + entry.target.id + '"]');
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -75% 0px' });
+sections.forEach(s => observer.observe(s));
+
+// Copy button
+function copyPrompt(btn) {
+  const block = btn.closest('.prompt-block');
+  const pre = block.querySelector('pre');
+  const text = pre ? pre.innerText : '';
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    btn.style.opacity = '1';
+    setTimeout(() => { btn.textContent = orig; btn.style.opacity = ''; }, 2000);
+  });
+}
+</script>
+
+</body>
+</html>
