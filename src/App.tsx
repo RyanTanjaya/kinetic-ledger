@@ -4,6 +4,7 @@ import { useAuth } from './auth/AuthContext';
 import { useClients, useClientDetail, useCreateClient, useDeleteClient } from './hooks/useClients';
 import { useCreateProject } from './hooks/useProjects';
 import { useTimeLog, useAddTimeEntry, useDeleteTimeEntry } from './hooks/useTimeLog';
+import { useDashboard } from './hooks/useDashboard';
 
 import LandingPage from './components/LandingPage';
 import Login from './pages/Login';
@@ -37,7 +38,8 @@ function LandingRoute() {
 // ── Protected screen wrappers: adapt the router + data layer to each screen's props ──
 function DashboardRoute() {
   const navigate = useNavigate();
-  const { invoices, projects, settings, downloadInvoice } = useData();
+  const { settings, downloadInvoice } = useData();
+  const { data: stats, isLoading, isError } = useDashboard();
   const onNavigate = (view: string, id?: string) => {
     switch (view) {
       case 'clients': navigate('/clients'); break;
@@ -48,10 +50,13 @@ function DashboardRoute() {
       default: navigate('/dashboard');
     }
   };
+
+  if (isLoading) return <RouteLoading label="Loading dashboard…" />;
+  if (isError || !stats) return <RouteError label="Couldn't load the dashboard." />;
+
   return (
     <PortalDashboard
-      invoices={invoices}
-      projects={projects}
+      stats={stats}
       settings={settings}
       onNavigate={onNavigate}
       onDownloadInvoice={downloadInvoice}

@@ -1,22 +1,30 @@
 import { ArrowUpRight, TrendingUp, FileText, Folder, CheckCircle, Clock, AlertTriangle, ArrowRight, Download } from 'lucide-react';
 import { Invoice, Project, ProfileSettings } from '../types';
 
+export interface DashboardStats {
+  totalEarnings: number;
+  thisMonthEarnings: number;
+  outstandingAmount: number;
+  activeProjects: number;
+  totalClients: number;
+  monthlyData: { name: string; amount: number }[];
+  recentInvoices: Invoice[];
+}
+
 interface DashboardProps {
-  invoices: Invoice[];
-  projects: Project[];
+  stats: DashboardStats;
   settings: ProfileSettings;
   onNavigate: (view: string, targetId?: string) => void;
   onDownloadInvoice: (invoice: Invoice) => void;
 }
 
 export default function PortalDashboard({
-  invoices,
-  projects,
+  stats,
   settings,
   onNavigate,
   onDownloadInvoice
 }: DashboardProps) {
-  
+
   // Format currency dynamically
   const formatCurrency = (val: number) => {
     const symbolMap: Record<string, string> = {
@@ -31,42 +39,10 @@ export default function PortalDashboard({
     return `${symbol}${val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
-  // 1. Total Earnings: Requested $24,850 baseline (or calculated from Paid invoices)
-  const paidInvoicesTotal = invoices
-    .filter(i => i.status === 'Paid')
-    .reduce((sum, i) => sum + i.amount, 0);
-  // Match baseline of $24,850 by adding difference
-  const baselineEarnings = 24850;
-  
-  // 2. This Month: June $3,200
-  const juneTotal = invoices
-    .filter(i => i.status === 'Paid' && i.issueDate.startsWith('2026-06') || (i.status === 'Sent' && i.issueDate.startsWith('2026-06')))
-    .reduce((sum, i) => sum + i.amount, 0);
-  const baselineThisMonth = 3200;
-
-  // 3. Outstanding: Requested $1,750 (Sent or Overdue invoices)
-  const outstandingTotal = invoices
-    .filter(i => i.status === 'Sent' || i.status === 'Overdue')
-    .reduce((sum, i) => sum + i.amount, 0);
-
-  // 4. Active Projects: Count of Active status projects
-  const activeProjectsCount = projects.filter(p => p.status === 'ACTIVE').length;
-
-  // Recent invoices: 5 most recent
-  const recentInvoices = invoices.slice(0, 5);
-
-  // Chart data
-  const chartData = [
-    { name: 'Jan', amount: 1200 },
-    { name: 'Feb', amount: 980 },
-    { name: 'Mar', amount: 1650 },
-    { name: 'Apr', amount: 2100 },
-    { name: 'May', amount: 2800 },
-    { name: 'Jun', amount: 3200 },
-    { name: 'Jul', amount: 0 }
-  ];
-
-  const maxAmount = Math.max(...chartData.map(d => d.amount));
+  // All figures are aggregated server-side (GET /api/dashboard/stats).
+  const recentInvoices = stats.recentInvoices;
+  const chartData = stats.monthlyData;
+  const maxAmount = Math.max(1, ...chartData.map(d => d.amount));
 
   return (
     <div className="space-y-10 animate-fade-in" id="dashboard-screen">
@@ -94,7 +70,7 @@ export default function PortalDashboard({
           </div>
           <div>
             <h3 className="text-2xl font-bold text-slate-950 tracking-tight">
-              {formatCurrency(baselineEarnings + (paidInvoicesTotal - 3025))}
+              {formatCurrency(stats.totalEarnings)}
             </h3>
             <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
               <span className="text-green-500 font-bold">↑ 12.4%</span> All time
@@ -112,7 +88,7 @@ export default function PortalDashboard({
           </div>
           <div>
             <h3 className="text-2xl font-bold text-slate-950 tracking-tight">
-              {formatCurrency(baselineThisMonth + (juneTotal - 2625))}
+              {formatCurrency(stats.thisMonthEarnings)}
             </h3>
             <p className="text-xs text-slate-400 mt-1">
               Currently June 2026
@@ -130,7 +106,7 @@ export default function PortalDashboard({
           </div>
           <div>
             <h3 className="text-2xl font-bold text-slate-950 tracking-tight">
-              {formatCurrency(outstandingTotal)}
+              {formatCurrency(stats.outstandingAmount)}
             </h3>
             <p className="text-xs text-slate-400 mt-1">
               Awaiting payment
@@ -148,7 +124,7 @@ export default function PortalDashboard({
           </div>
           <div>
             <h3 className="text-2xl font-bold text-slate-950 tracking-tight">
-              {activeProjectsCount}
+              {stats.activeProjects}
             </h3>
             <p className="text-xs text-slate-400 mt-1">
               Across all clients
