@@ -2,6 +2,7 @@ import { Routes, Route, Navigate, useNavigate, useParams, useSearchParams } from
 import { useData } from './data/DataProvider';
 import { useAuth } from './auth/AuthContext';
 import { useClients, useClientDetail, useCreateClient, useDeleteClient } from './hooks/useClients';
+import { useCreateProject } from './hooks/useProjects';
 
 import LandingPage from './components/LandingPage';
 import Login from './pages/Login';
@@ -89,6 +90,7 @@ function ClientDetailRoute() {
   const { id } = useParams();
   const { settings, downloadInvoice } = useData();
   const { data, isLoading, isError } = useClientDetail(id);
+  const createProject = useCreateProject(id ?? '');
 
   if (isLoading) return <RouteLoading label="Loading client…" />;
   if (isError || !data) return <Navigate to="/clients" replace />;
@@ -103,7 +105,15 @@ function ClientDetailRoute() {
       invoices={data.invoices}
       settings={settings}
       onBackToList={() => navigate('/clients')}
-      onAddProject={soon('Adding projects')}
+      onAddProject={(proj) =>
+        createProject.mutate({
+          title: proj.title,
+          description: proj.description,
+          status: proj.status,
+          hourlyRate: proj.hourlyRate,
+          totalBudget: proj.budget,
+        })
+      }
       onNavigateToInvoiceGenerator={(clientId) => navigate(`/invoices/new?clientId=${clientId}`)}
       onNavigateToTimeLog={soon('Time logging')}
       onDownloadInvoice={downloadInvoice}

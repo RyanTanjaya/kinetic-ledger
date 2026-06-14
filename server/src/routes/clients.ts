@@ -143,4 +143,41 @@ router.delete('/:id', async (req, res) => {
   res.status(204).send();
 });
 
+// ── Nested: create a project under a client ────────────────────────────────
+const projectCreateSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().optional(),
+  status: z.enum(['ACTIVE', 'PAUSED', 'COMPLETED']).default('ACTIVE'),
+  hourlyRate: z.number().nonnegative().default(0),
+  totalBudget: z.number().nonnegative().optional(),
+});
+
+// POST /api/clients/:id/projects
+router.post('/:id/projects', async (req, res) => {
+  const owned = await prisma.client.findFirst({
+    where: { id: req.params.id, userId: req.userId! },
+    select: { id: true },
+  });
+  if (!owned) {
+    res.status(404).json({ error: 'Client not found' });
+    return;
+  }
+  const parsed = projectCreateSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Invalid input', details: parsed.error.flatten() });
+    return;
+  }
+  const project = await prisma.project.create({
+    data: {
+      client: { connect: { id: req.params.id } },
+      title: parsed.data.title,
+      description: parsed.data.description,
+      status: parsed.data.status,
+      hourlyRate: parsed.data.hourlyRate,
+      totalBudget: parsed.data.totalBudget,
+    },
+  });
+  res.status(201).json({ project });
+});
+
 export default router;
