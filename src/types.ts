@@ -10,6 +10,7 @@ export interface Client {
   email: string;
   phone: string;
   totalBilled: number;
+  projectCount?: number; // present when loaded from the clients list API
 }
 
 export interface Project {

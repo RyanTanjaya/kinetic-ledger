@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useData } from './data/DataProvider';
 import { useAuth } from './auth/AuthContext';
+import { useClients, useClientDetail, useCreateClient, useDeleteClient } from './hooks/useClients';
 
 import LandingPage from './components/LandingPage';
 import Login from './pages/Login';
@@ -15,6 +16,14 @@ import InvoiceGenerator from './components/InvoiceGenerator';
 import InvoiceList from './components/InvoiceList';
 import TimeLog from './components/TimeLog';
 import PortalSettings from './components/PortalSettings';
+
+// ── Small route status helpers ──
+function RouteLoading({ label }: { label: string }) {
+  return <div className="py-20 text-center text-sm text-slate-400 font-mono">{label}</div>;
+}
+function RouteError({ label }: { label: string }) {
+  return <div className="py-20 text-center text-sm text-rose-500 font-mono">{label}</div>;
+}
 
 // ── Public landing: CTAs go to login (or straight to the app if already signed in) ──
 function LandingRoute() {
@@ -50,15 +59,26 @@ function DashboardRoute() {
 
 function ClientsRoute() {
   const navigate = useNavigate();
-  const { clients, projects, invoices, settings, addClient, deleteClient } = useData();
+  const { settings } = useData();
+  const { data: clients = [], isLoading, isError } = useClients();
+  const createClient = useCreateClient();
+  const deleteClient = useDeleteClient();
+
+  if (isLoading) return <RouteLoading label="Loading clients…" />;
+  if (isError) return <RouteError label="Couldn't load clients. Is the API running?" />;
+
   return (
     <ClientsList
       clients={clients}
-      projects={projects}
-      invoices={invoices}
+      projects={[]}
+      invoices={[]}
       settings={settings}
-      onAddClient={addClient}
-      onDeleteClient={deleteClient}
+      onAddClient={(c) => createClient.mutate(c)}
+      onDeleteClient={(id) => {
+        if (confirm('Delete this client? All linked projects and invoices will be deleted too.')) {
+          deleteClient.mutate(id);
+        }
+      }}
       onNavigateToClient={(id) => navigate(`/clients/${id}`)}
     />
   );
@@ -67,22 +87,28 @@ function ClientsRoute() {
 function ClientDetailRoute() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { clients, projects, invoices, settings, addProject, downloadInvoice, markInvoicePaid, deleteInvoice } = useData();
-  const client = clients.find((c) => c.id === id);
-  if (!client) return <Navigate to="/clients" replace />;
+  const { settings, downloadInvoice } = useData();
+  const { data, isLoading, isError } = useClientDetail(id);
+
+  if (isLoading) return <RouteLoading label="Loading client…" />;
+  if (isError || !data) return <Navigate to="/clients" replace />;
+
+  // Features whose backend endpoints arrive in later build steps.
+  const soon = (feature: string) => () => alert(`${feature} arrives in a later build step.`);
+
   return (
     <ClientDetail
-      client={client}
-      projects={projects.filter((p) => p.clientId === client.id)}
-      invoices={invoices.filter((i) => i.clientId === client.id)}
+      client={data.client}
+      projects={data.projects}
+      invoices={data.invoices}
       settings={settings}
       onBackToList={() => navigate('/clients')}
-      onAddProject={(proj) => addProject(client.id, proj)}
+      onAddProject={soon('Adding projects')}
       onNavigateToInvoiceGenerator={(clientId) => navigate(`/invoices/new?clientId=${clientId}`)}
-      onNavigateToTimeLog={(projectId) => navigate(`/clients/${client.id}/projects/${projectId}`)}
+      onNavigateToTimeLog={soon('Time logging')}
       onDownloadInvoice={downloadInvoice}
-      onMarkInvoicePaid={markInvoicePaid}
-      onDeleteInvoice={deleteInvoice}
+      onMarkInvoicePaid={soon('Marking invoices paid')}
+      onDeleteInvoice={soon('Deleting invoices')}
     />
   );
 }

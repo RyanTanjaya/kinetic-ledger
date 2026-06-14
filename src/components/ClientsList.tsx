@@ -168,9 +168,8 @@ export default function ClientsList({
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredClients.map((client) => {
-                  // Count total actual active projects
-                  const clientProjs = projects.filter(p => p.clientId === client.id);
-                  const activeProjsCount = clientProjs.length;
+                  // Project count comes from the API (falls back to local data).
+                  const activeProjsCount = client.projectCount ?? projects.filter(p => p.clientId === client.id).length;
 
                   // Paid invoice calculations
                   const clientPaidTotal = invoices

@@ -31,7 +31,28 @@ router.get('/', async (req, res) => {
     orderBy: { createdAt: 'desc' },
     include: { _count: { select: { projects: true } } },
   });
-  res.json({ clients });
+
+  // Sum PAID invoices per client for the "total billed" column.
+  const billed = await prisma.invoice.groupBy({
+    by: ['clientId'],
+    where: { userId: req.userId!, status: 'PAID' },
+    _sum: { totalAmount: true },
+  });
+  const billedByClient: Record<string, number> = {};
+  for (const b of billed) billedByClient[b.clientId] = b._sum.totalAmount ?? 0;
+
+  const result = clients.map((c) => ({
+    id: c.id,
+    name: c.name,
+    company: c.company,
+    email: c.email,
+    phone: c.phone,
+    createdAt: c.createdAt,
+    projectCount: c._count.projects,
+    totalBilled: billedByClient[c.id] ?? 0,
+  }));
+
+  res.json({ clients: result });
 });
 
 // POST /api/clients
@@ -60,14 +81,29 @@ router.get('/:id', async (req, res) => {
     where: { id: req.params.id, userId: req.userId! },
     include: {
       projects: { orderBy: { createdAt: 'desc' } },
-      invoices: { orderBy: { issuedAt: 'desc' }, take: 10 },
+      invoices: { orderBy: { issuedAt: 'desc' }, include: { items: true } },
     },
   });
   if (!client) {
     res.status(404).json({ error: 'Client not found' });
     return;
   }
-  res.json({ client });
+
+  // Attach total logged hours per project (sum of its time entries).
+  const projectIds = client.projects.map((p) => p.id);
+  const hours = projectIds.length
+    ? await prisma.timeEntry.groupBy({
+        by: ['projectId'],
+        where: { projectId: { in: projectIds } },
+        _sum: { hours: true },
+      })
+    : [];
+  const hoursByProject: Record<string, number> = {};
+  for (const h of hours) hoursByProject[h.projectId] = h._sum.hours ?? 0;
+
+  const projects = client.projects.map((p) => ({ ...p, totalHours: hoursByProject[p.id] ?? 0 }));
+
+  res.json({ client: { ...client, projects } });
 });
 
 // PUT /api/clients/:id
