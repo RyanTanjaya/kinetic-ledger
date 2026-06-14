@@ -34,7 +34,8 @@ export interface LineItem {
 }
 
 export interface Invoice {
-  id: string; // e.g. "INV-013"
+  id: string; // e.g. "INV-013" (human invoice number; used for display)
+  dbId?: string; // database id (cuid) when loaded from the API; used for mutations
   clientId: string;
   clientName: string;
   clientCompany?: string;

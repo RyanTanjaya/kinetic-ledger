@@ -27,6 +27,7 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
   const s = r.data.stats;
   const recentInvoices: Invoice[] = (s.recentInvoices ?? []).map((inv: any) => ({
     id: inv.invoiceNumber,
+    dbId: inv.id,
     clientId: inv.clientId,
     clientName: inv.client?.name ?? '',
     clientCompany: inv.client?.company ?? undefined,

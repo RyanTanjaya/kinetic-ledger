@@ -76,6 +76,7 @@ export async function fetchClientDetail(id: string): Promise<ClientDetailData> {
 
   const invoices: Invoice[] = (c.invoices ?? []).map((inv: any) => ({
     id: inv.invoiceNumber,
+    dbId: inv.id,
     clientId: c.id,
     clientName: c.name,
     clientCompany: c.company ?? undefined,

@@ -5,6 +5,7 @@ import { useClients, useClientDetail, useCreateClient, useDeleteClient } from '.
 import { useCreateProject } from './hooks/useProjects';
 import { useTimeLog, useAddTimeEntry, useDeleteTimeEntry } from './hooks/useTimeLog';
 import { useDashboard } from './hooks/useDashboard';
+import { useInvoices, useCreateInvoice, useMarkInvoicePaid, useDeleteInvoice } from './hooks/useInvoices';
 
 import LandingPage from './components/LandingPage';
 import Login from './pages/Login';
@@ -97,12 +98,13 @@ function ClientDetailRoute() {
   const { settings, downloadInvoice } = useData();
   const { data, isLoading, isError } = useClientDetail(id);
   const createProject = useCreateProject(id ?? '');
+  const markPaid = useMarkInvoicePaid();
+  const deleteInv = useDeleteInvoice();
 
   if (isLoading) return <RouteLoading label="Loading client…" />;
   if (isError || !data) return <Navigate to="/clients" replace />;
 
-  // Features whose backend endpoints arrive in later build steps.
-  const soon = (feature: string) => () => alert(`${feature} arrives in a later build step.`);
+  const dbIdOf = (num: string) => data.invoices.find((i) => i.id === num)?.dbId;
 
   return (
     <ClientDetail
@@ -123,23 +125,44 @@ function ClientDetailRoute() {
       onNavigateToInvoiceGenerator={(clientId) => navigate(`/invoices/new?clientId=${clientId}`)}
       onNavigateToTimeLog={(projectId) => navigate(`/clients/${id}/projects/${projectId}`)}
       onDownloadInvoice={downloadInvoice}
-      onMarkInvoicePaid={soon('Marking invoices paid')}
-      onDeleteInvoice={soon('Deleting invoices')}
+      onMarkInvoicePaid={(num) => {
+        const dbId = dbIdOf(num);
+        if (dbId) markPaid.mutate(dbId);
+      }}
+      onDeleteInvoice={(num) => {
+        const dbId = dbIdOf(num);
+        if (dbId && confirm('Delete this draft invoice?')) deleteInv.mutate(dbId);
+      }}
     />
   );
 }
 
 function InvoiceListRoute() {
   const navigate = useNavigate();
-  const { invoices, settings, downloadInvoice, markInvoicePaid, deleteInvoice } = useData();
+  const { settings, downloadInvoice } = useData();
+  const { data: invoices = [], isLoading, isError } = useInvoices();
+  const markPaid = useMarkInvoicePaid();
+  const deleteInv = useDeleteInvoice();
+
+  if (isLoading) return <RouteLoading label="Loading invoices…" />;
+  if (isError) return <RouteError label="Couldn't load invoices. Is the API running?" />;
+
+  const dbIdOf = (num: string) => invoices.find((i) => i.id === num)?.dbId;
+
   return (
     <InvoiceList
       invoices={invoices}
       settings={settings}
       onNavigateToCreate={() => navigate('/invoices/new')}
       onDownloadInvoice={downloadInvoice}
-      onMarkPaid={markInvoicePaid}
-      onDeleteInvoice={deleteInvoice}
+      onMarkPaid={(num) => {
+        const dbId = dbIdOf(num);
+        if (dbId) markPaid.mutate(dbId);
+      }}
+      onDeleteInvoice={(num) => {
+        const dbId = dbIdOf(num);
+        if (dbId && confirm('Delete this draft invoice?')) deleteInv.mutate(dbId);
+      }}
     />
   );
 }
@@ -147,19 +170,44 @@ function InvoiceListRoute() {
 function InvoiceGeneratorRoute() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { clients, settings, getNextInvoiceId, saveInvoice, downloadInvoice } = useData();
+  const { settings, downloadInvoice } = useData();
+  const { data: clients = [] } = useClients();
+  const { data: invoices = [] } = useInvoices();
+  const createInvoice = useCreateInvoice();
   const preselectedClientId = params.get('clientId') ?? undefined;
+
+  // Best-guess next number for the preview; the server assigns the real one on save.
+  const nextNum =
+    invoices.reduce((max, inv) => {
+      const m = inv.id.match(/(\d+)/);
+      return m ? Math.max(max, parseInt(m[1])) : max;
+    }, 0) + 1;
+  const nextInvoiceId = `INV-${String(nextNum).padStart(3, '0')}`;
+
   return (
     <InvoiceGenerator
       clients={clients}
       settings={settings}
       preselectedClientId={preselectedClientId}
-      nextInvoiceId={getNextInvoiceId()}
+      nextInvoiceId={nextInvoiceId}
       onBackToList={() => navigate('/invoices')}
-      onSaveInvoice={(inv) => {
-        saveInvoice(inv);
-        navigate('/invoices');
-      }}
+      onSaveInvoice={(inv) =>
+        createInvoice.mutate(
+          {
+            clientId: inv.clientId,
+            issueDate: inv.issueDate,
+            dueDate: inv.dueDate,
+            notes: inv.notes,
+            status: inv.status,
+            items: inv.lineItems.map((li) => ({
+              description: li.description,
+              quantity: li.qty,
+              unitPrice: li.unitPrice,
+            })),
+          },
+          { onSuccess: () => navigate('/invoices') }
+        )
+      }
       onDownloadInvoice={downloadInvoice}
     />
   );
