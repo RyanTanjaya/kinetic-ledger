@@ -1,0 +1,21 @@
+# Render blueprint for the Kinetic Ledger API.
+# Create a new Blueprint in Render pointed at this repo, then set the
+# sync:false env vars (DATABASE_URL, FRONTEND_URL) in the dashboard.
+services:
+  - type: web
+    name: kinetic-ledger-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: node dist/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
