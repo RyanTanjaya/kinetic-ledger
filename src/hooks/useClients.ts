@@ -3,8 +3,10 @@ import {
   fetchClients,
   fetchClientDetail,
   createClient,
+  updateClient,
   deleteClient,
   type ClientInput,
+  type ClientUpdate,
 } from '../api/clients';
 
 export function useClients() {
@@ -31,6 +33,14 @@ export function useDeleteClient() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteClient(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['clients'] }),
+  });
+}
+
+export function useUpdateClient() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: ClientUpdate }) => updateClient(id, input),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['clients'] }),
   });
 }
