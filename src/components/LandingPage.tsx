@@ -4,8 +4,6 @@ import {
   Clock,
   Users,
   BarChart2,
-  Check,
-  Quote,
   ArrowRight,
   Play,
   ChevronRight,
@@ -62,9 +60,6 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
             <a href="#features" className="hover:text-slate-900 transition-colors">
               Features
             </a>
-            <a href="#pricing" className="hover:text-slate-900 transition-colors">
-              Pricing
-            </a>
             <a href="#faq" className="hover:text-slate-900 transition-colors">
               FAQ
             </a>
@@ -92,15 +87,6 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
       {/* HERO SECTION */}
       <section className="relative px-6 pt-16 pb-24 sm:px-10 lg:pt-24 lg:pb-32 overflow-hidden bg-slate-50/40 border-b border-slate-100">
         <div className="mx-auto max-w-7xl relative z-10 flex flex-col items-center text-center">
-
-          {/* Eyebrow Label */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-block px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-widest rounded mb-6"
-          >
-            Version 4.0 Now Live
-          </motion.div>
 
           {/* Headline */}
           <motion.h1
@@ -335,179 +321,6 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
         <div className="absolute bottom-6 right-6 text-slate-700 font-mono text-xs">+</div>
       </section>
 
-      {/* PRICING PLANS */}
-      <section id="pricing" className="py-24 bg-slate-50/40 border-b border-slate-100 scroll-mt-20">
-        <div className="mx-auto max-w-7xl px-6 sm:px-10">
-
-          {/* Header */}
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="font-mono text-xs font-bold uppercase tracking-widest text-slate-400 block mb-2">
-              [ 02 // ACCESS PLANS ]
-            </span>
-            <h2 className="font-display font-medium text-3xl sm:text-4xl text-slate-900 tracking-tight">
-              Simple, transparent pricing.
-            </h2>
-            <p className="mt-3 text-base text-slate-500">
-              Start for free, unlock premium features whenever your billable volume expands.
-            </p>
-          </div>
-
-          {/* Pricing Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
-
-            {/* Starter Plan */}
-            <div className="border border-slate-100 bg-white p-8 rounded-2xl flex flex-col justify-between shadow-md hover:shadow-lg transition-shadow relative">
-              <div>
-                <span className="font-mono text-xs font-bold text-slate-400 uppercase tracking-widest">01 / STARTER</span>
-                <h3 className="font-sans font-bold text-2xl text-slate-900 mt-1">Starter</h3>
-                <div className="my-6">
-                  <span className="font-sans font-bold text-5xl text-slate-900">$0</span>
-                  <span className="font-mono text-xs text-slate-400"> / MONTH</span>
-                </div>
-                <p className="text-xs text-slate-500 mb-6">Perfect for new independent contractors getting set up.</p>
-
-                <ul className="space-y-3.5 mb-8 border-t border-slate-100 pt-6">
-                  <li className="flex items-start gap-2.5 text-xs text-slate-600">
-                    <Check size={14} className="text-slate-800 mt-0.5 shrink-0" />
-                    <span>Up to 3 active clients</span>
-                  </li>
-                  <li className="flex items-start gap-2.5 text-xs text-slate-600">
-                    <Check size={14} className="text-slate-800 mt-0.5 shrink-0" />
-                    <span>Basic billing &amp; time tracker</span>
-                  </li>
-                  <li className="flex items-start gap-2.5 text-xs text-slate-600">
-                    <Check size={14} className="text-slate-800 mt-0.5 shrink-0" />
-                    <span>Standard ledger template (Watermarked)</span>
-                  </li>
-                </ul>
-              </div>
-
-              <button
-                type="button"
-                onClick={onEnter}
-                className="block w-full text-center py-3 px-4 border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium text-xs rounded-lg transition-colors"
-              >
-                Sign Up Free
-              </button>
-            </div>
-
-            {/* Pro Plan */}
-            <div className="border border-slate-250 bg-white p-8 rounded-2xl flex flex-col justify-between relative shadow-xl scale-100 md:scale-105 z-10 hover:shadow-2xl transition-all duration-300 ring-4 ring-slate-50">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3.5 py-1 text-[9px] font-mono font-bold uppercase tracking-widest rounded-full">
-                MOST POPULAR
-              </div>
-
-              <div>
-                <span className="font-mono text-xs font-bold text-slate-500 uppercase tracking-widest">02 / PRO</span>
-                <h3 className="font-sans font-bold text-2xl text-slate-900 mt-1">Pro Ledger</h3>
-                <div className="my-6">
-                  <span className="font-sans font-bold text-5xl text-slate-900">$15</span>
-                  <span className="font-mono text-xs text-slate-400"> / MONTH</span>
-                </div>
-                <p className="text-xs text-slate-500 mb-6 font-medium">Perfect for active full-time freelancers ready to scale operations.</p>
-
-                <ul className="space-y-3.5 mb-8 border-t border-slate-100 pt-6">
-                  <li className="flex items-start gap-2.5 text-xs text-slate-700 font-semibold">
-                    <Check size={14} className="text-slate-900 mt-0.5 shrink-0" />
-                    <span>Unlimited tracked clients &amp; jobs</span>
-                  </li>
-                  <li className="flex items-start gap-2.5 text-xs text-slate-700 font-semibold">
-                    <Check size={14} className="text-slate-900 mt-0.5 shrink-0" />
-                    <span>Custom unbranded templates</span>
-                  </li>
-                  <li className="flex items-start gap-2.5 text-xs text-slate-700 font-semibold">
-                    <Check size={14} className="text-slate-900 mt-0.5 shrink-0" />
-                    <span>Continuous rounded tracker reports</span>
-                  </li>
-                  <li className="flex items-start gap-2.5 text-xs text-slate-700 font-semibold">
-                    <Check size={14} className="text-slate-900 mt-0.5 shrink-0" />
-                    <span>Full vector exports &amp; analytics integrations</span>
-                  </li>
-                </ul>
-              </div>
-
-              <button
-                type="button"
-                onClick={onEnter}
-                className="block w-full text-center py-3.5 px-4 bg-slate-900 text-white hover:bg-slate-800 font-medium text-xs rounded-lg transition-colors shadow shadow-slate-100"
-              >
-                Start 14-Day Free Trial
-              </button>
-            </div>
-
-            {/* Agency Plan */}
-            <div className="border border-slate-100 bg-white p-8 rounded-2xl flex flex-col justify-between shadow-md hover:shadow-lg transition-shadow relative">
-              <div>
-                <span className="font-mono text-xs font-bold text-slate-400 uppercase tracking-widest">03 / AGENCY</span>
-                <h3 className="font-sans font-bold text-2xl text-slate-900 mt-1">Agency</h3>
-                <div className="my-6">
-                  <span className="font-sans font-bold text-5xl text-slate-900">$45</span>
-                  <span className="font-mono text-xs text-slate-400"> / MONTH</span>
-                </div>
-                <p className="text-xs text-slate-500 mb-6">Designed for boutique digital agencies and squads.</p>
-
-                <ul className="space-y-3.5 mb-8 border-t border-slate-100 pt-6">
-                  <li className="flex items-start gap-2.5 text-xs text-slate-600">
-                    <Check size={14} className="text-slate-800 mt-0.5 shrink-0" />
-                    <span>Everything loaded in Pro Ledger</span>
-                  </li>
-                  <li className="flex items-start gap-2.5 text-xs text-slate-600">
-                    <Check size={14} className="text-slate-800 mt-0.5 shrink-0" />
-                    <span>Up to 5 nested team log-ins</span>
-                  </li>
-                  <li className="flex items-start gap-2.5 text-xs text-slate-600">
-                    <Check size={14} className="text-slate-800 mt-0.5 shrink-0" />
-                    <span>Granular manager roles &amp; shared logs</span>
-                  </li>
-                </ul>
-              </div>
-
-              <button
-                type="button"
-                onClick={onEnter}
-                className="block w-full text-center py-3 px-4 border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium text-xs rounded-lg transition-colors"
-              >
-                Contact Sales
-              </button>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* HIGHLINE SOCIAL PROOF / QUOTE TESTIMONIAL */}
-      <section className="py-24 bg-white">
-        <div className="mx-auto max-w-4xl px-6">
-          <div className="border border-slate-100 bg-slate-50/30 p-10 md:p-14 relative rounded-2xl shadow-sm text-center">
-
-            {/* Quote icon offset bubble */}
-            <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-slate-900 text-white flex items-center justify-center rounded-full border border-slate-800">
-              <Quote size={18} className="fill-current" />
-            </div>
-
-            <p className="font-sans font-medium text-slate-800 text-lg sm:text-xl md:text-2xl leading-relaxed mb-8 mt-4">
-              "Kinetic Ledger completely transformed how I run my design business. I used to spend hours every week patching together spreadsheets and clunky invoice templates. Now, everything is centralized, my clients are impressed, and I get paid days faster."
-            </p>
-
-            {/* Profile Avatar & Details */}
-            <div className="inline-flex items-center gap-4 text-left">
-              <div className="w-12 h-12 rounded-full border border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center text-slate-800 font-bold">
-                SJ
-              </div>
-              <div>
-                <h4 className="font-sans font-bold text-xs uppercase tracking-wider text-slate-800">
-                  Sarah Jenkins
-                </h4>
-                <p className="text-xs text-slate-500 font-medium">
-                  Independent UX Creator
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ACCORDION FAQ SECTION */}
       <section id="faq" className="py-24 bg-slate-50/30 border-t border-slate-100 scroll-mt-20">
         <div className="mx-auto max-w-4xl px-6">
@@ -593,7 +406,6 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
               </h5>
               <ul className="space-y-2 text-xs text-slate-400">
                 <li><a href="#features" className="hover:text-white transition-colors">Features &amp; Mechanics</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing Options</a></li>
                 <li><a href="#faq" className="hover:text-white transition-colors">Frequently Asked</a></li>
               </ul>
             </div>
