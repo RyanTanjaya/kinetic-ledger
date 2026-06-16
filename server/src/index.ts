@@ -13,9 +13,32 @@ import { requireAuth } from './middleware/auth';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+// Allowed CORS origins: explicit FRONTEND_URL (comma-separated ok), plus any
+// localhost port and any *.vercel.app deployment (production + previews).
+const ALLOWED_ORIGINS = (process.env.FRONTEND_URL || 'http://localhost:3000')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 
-app.use(cors({ origin: FRONTEND_URL }));
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true); // same-origin / curl / server-to-server
+      let host = '';
+      try {
+        host = new URL(origin).hostname;
+      } catch {
+        /* malformed origin */
+      }
+      const allowed =
+        ALLOWED_ORIGINS.includes(origin) ||
+        host === 'localhost' ||
+        host === '127.0.0.1' ||
+        host.endsWith('.vercel.app');
+      cb(null, allowed);
+    },
+  })
+);
 app.use(express.json({ limit: '1mb' }));
 
 // Health check (public)
