@@ -7,7 +7,9 @@ services:
     runtime: node
     plan: free
     rootDir: server
-    buildCommand: npm install && npx prisma generate && npm run build
+    # --include=dev so tsc + prisma (devDependencies) are available at build time
+    # even though NODE_ENV=production is set for runtime.
+    buildCommand: npm install --include=dev && npx prisma generate && npm run build
     startCommand: node dist/index.js
     healthCheckPath: /api/health
     envVars:
