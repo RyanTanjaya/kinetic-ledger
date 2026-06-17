@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { ArrowLeft, Plus, Mail, Phone, Edit2, FileText, CheckCircle, Clock, Trash, Download } from 'lucide-react';
+import { ArrowLeft, Plus, X, Mail, Phone, Edit2, FileText, CheckCircle, Clock, Trash, Download } from 'lucide-react';
 import { Client, Project, Invoice, ProfileSettings } from '../types';
 
 interface ClientDetailProps {
@@ -8,6 +8,7 @@ interface ClientDetailProps {
   invoices: Invoice[];
   settings: ProfileSettings;
   onBackToList: () => void;
+  onEditClient: (updates: { name: string; company: string; email: string; phone: string }) => void;
   onAddProject: (newProj: Omit<Project, 'id' | 'clientId' | 'clientName' | 'totalHours'>) => void;
   onNavigateToInvoiceGenerator: (clientId: string) => void;
   onNavigateToTimeLog: (projectId: string) => void;
@@ -22,6 +23,7 @@ export default function ClientDetail({
   invoices,
   settings,
   onBackToList,
+  onEditClient,
   onAddProject,
   onNavigateToInvoiceGenerator,
   onNavigateToTimeLog,
@@ -32,6 +34,13 @@ export default function ClientDetail({
   
   const [activeTab, setActiveTab] = useState<'Projects' | 'Invoices'>('Projects');
   const [isAddProjModalOpen, setIsAddProjModalOpen] = useState(false);
+
+  // Edit Client fields
+  const [isEditClientOpen, setIsEditClientOpen] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editCompany, setEditCompany] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
 
   // Add Project fields
   const [projTitle, setProjTitle] = useState('');
@@ -86,6 +95,26 @@ export default function ClientDetail({
     setIsAddProjModalOpen(false);
   };
 
+  const openEditClient = () => {
+    setEditName(client.name);
+    setEditCompany(client.company);
+    setEditEmail(client.email);
+    setEditPhone(client.phone);
+    setIsEditClientOpen(true);
+  };
+
+  const handleEditClientSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!editName.trim()) return;
+    onEditClient({
+      name: editName.trim(),
+      company: editCompany.trim(),
+      email: editEmail.trim(),
+      phone: editPhone.trim(),
+    });
+    setIsEditClientOpen(false);
+  };
+
   return (
     <div className="space-y-8 animate-fade-in" id="client-detail-screen">
       
@@ -133,8 +162,10 @@ export default function ClientDetail({
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
           <button 
             type="button"
-            className="flex-1 md:flex-none px-4 py-2 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-semibold transition-colors"
+            onClick={openEditClient}
+            className="flex-1 md:flex-none px-4 py-2 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
           >
+            <Edit2 size={13} />
             Edit Client
           </button>
           <button
@@ -344,6 +375,85 @@ export default function ClientDetail({
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Edit Client Dialog */}
+      {isEditClientOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-slide-up">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Edit Client</h3>
+              <button
+                onClick={() => setIsEditClientOpen(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+                type="button"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditClientSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                  Full Name <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full px-3.5 py-2 border border-slate-200 bg-white text-xs text-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-100 focus:border-slate-400 transition-all font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Company Name</label>
+                <input
+                  type="text"
+                  value={editCompany}
+                  onChange={(e) => setEditCompany(e.target.value)}
+                  className="w-full px-3.5 py-2 border border-slate-200 bg-white text-xs text-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-100 focus:border-slate-400 transition-all font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Email Address</label>
+                <input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  className="w-full px-3.5 py-2 border border-slate-200 bg-white text-xs font-mono text-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-100 focus:border-slate-400 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Phone Number</label>
+                <input
+                  type="text"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  className="w-full px-3.5 py-2 border border-slate-200 bg-white text-xs font-mono text-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-100 focus:border-slate-400 transition-all"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsEditClientOpen(false)}
+                  className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold hover:bg-slate-50 text-slate-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-all shadow-sm"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

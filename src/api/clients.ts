@@ -42,6 +42,17 @@ export async function deleteClient(id: string): Promise<void> {
   await api.delete(`/api/clients/${id}`);
 }
 
+export interface ClientUpdate {
+  name?: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+}
+
+export async function updateClient(id: string, input: ClientUpdate): Promise<void> {
+  await api.put(`/api/clients/${id}`, input);
+}
+
 // ── Client detail (maps DB shapes -> the UI's frontend types) ──────────────
 export interface ClientDetailData {
   client: Client;

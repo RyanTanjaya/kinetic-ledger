@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useData } from './data/DataProvider';
 import { useAuth } from './auth/AuthContext';
-import { useClients, useClientDetail, useCreateClient, useDeleteClient } from './hooks/useClients';
+import { useClients, useClientDetail, useCreateClient, useDeleteClient, useUpdateClient } from './hooks/useClients';
 import { useCreateProject } from './hooks/useProjects';
 import { useTimeLog, useAddTimeEntry, useDeleteTimeEntry } from './hooks/useTimeLog';
 import { useDashboard } from './hooks/useDashboard';
@@ -99,6 +99,7 @@ function ClientDetailRoute() {
   const { settings, downloadInvoice } = useData();
   const { data, isLoading, isError } = useClientDetail(id);
   const createProject = useCreateProject(id ?? '');
+  const updateClient = useUpdateClient();
   const markPaid = useMarkInvoicePaid();
   const deleteInv = useDeleteInvoice();
 
@@ -114,6 +115,7 @@ function ClientDetailRoute() {
       invoices={data.invoices}
       settings={settings}
       onBackToList={() => navigate('/clients')}
+      onEditClient={(updates) => updateClient.mutate({ id: id ?? '', input: updates })}
       onAddProject={(proj) =>
         createProject.mutate({
           title: proj.title,
