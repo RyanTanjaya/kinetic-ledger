@@ -15,3 +15,7 @@ export async function createProject(clientId: string, input: ProjectInput): Prom
 export async function deleteProject(id: string): Promise<void> {
   await api.delete(`/api/projects/${id}`);
 }
+
+export async function updateProject(id: string, input: ProjectInput): Promise<void> {
+  await api.put(`/api/projects/${id}`, input);
+}

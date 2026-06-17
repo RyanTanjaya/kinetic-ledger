@@ -2,7 +2,7 @@ import { Routes, Route, Navigate, useNavigate, useParams, useSearchParams } from
 import { useData } from './data/DataProvider';
 import { useAuth } from './auth/AuthContext';
 import { useClients, useClientDetail, useCreateClient, useDeleteClient, useUpdateClient } from './hooks/useClients';
-import { useCreateProject } from './hooks/useProjects';
+import { useCreateProject, useUpdateProject } from './hooks/useProjects';
 import { useTimeLog, useAddTimeEntry, useDeleteTimeEntry } from './hooks/useTimeLog';
 import { useDashboard } from './hooks/useDashboard';
 import { useInvoices, useCreateInvoice, useMarkInvoicePaid, useDeleteInvoice } from './hooks/useInvoices';
@@ -99,6 +99,7 @@ function ClientDetailRoute() {
   const { settings, downloadInvoice } = useData();
   const { data, isLoading, isError } = useClientDetail(id);
   const createProject = useCreateProject(id ?? '');
+  const updateProject = useUpdateProject(id ?? '');
   const updateClient = useUpdateClient();
   const markPaid = useMarkInvoicePaid();
   const deleteInv = useDeleteInvoice();
@@ -116,6 +117,18 @@ function ClientDetailRoute() {
       settings={settings}
       onBackToList={() => navigate('/clients')}
       onEditClient={(updates) => updateClient.mutate({ id: id ?? '', input: updates })}
+      onEditProject={(projectId, updates) =>
+        updateProject.mutate({
+          id: projectId,
+          input: {
+            title: updates.title,
+            description: updates.description,
+            status: updates.status,
+            hourlyRate: updates.hourlyRate,
+            totalBudget: updates.budget,
+          },
+        })
+      }
       onAddProject={(proj) =>
         createProject.mutate({
           title: proj.title,
