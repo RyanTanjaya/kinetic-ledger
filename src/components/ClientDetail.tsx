@@ -9,6 +9,7 @@ interface ClientDetailProps {
   settings: ProfileSettings;
   onBackToList: () => void;
   onEditClient: (updates: { name: string; company: string; email: string; phone: string }) => void;
+  onEditProject: (projectId: string, updates: { title: string; description: string; hourlyRate: number; status: 'ACTIVE' | 'PAUSED' | 'COMPLETED'; budget?: number }) => void;
   onAddProject: (newProj: Omit<Project, 'id' | 'clientId' | 'clientName' | 'totalHours'>) => void;
   onNavigateToInvoiceGenerator: (clientId: string) => void;
   onNavigateToTimeLog: (projectId: string) => void;
@@ -24,6 +25,7 @@ export default function ClientDetail({
   settings,
   onBackToList,
   onEditClient,
+  onEditProject,
   onAddProject,
   onNavigateToInvoiceGenerator,
   onNavigateToTimeLog,
@@ -41,6 +43,14 @@ export default function ClientDetail({
   const [editCompany, setEditCompany] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
+
+  // Edit Project fields
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [editProjTitle, setEditProjTitle] = useState('');
+  const [editProjDesc, setEditProjDesc] = useState('');
+  const [editProjRate, setEditProjRate] = useState(75);
+  const [editProjStatus, setEditProjStatus] = useState<'ACTIVE' | 'PAUSED' | 'COMPLETED'>('ACTIVE');
+  const [editProjBudget, setEditProjBudget] = useState<number | ''>('');
 
   // Add Project fields
   const [projTitle, setProjTitle] = useState('');
@@ -113,6 +123,28 @@ export default function ClientDetail({
       phone: editPhone.trim(),
     });
     setIsEditClientOpen(false);
+  };
+
+  const openEditProject = (proj: Project) => {
+    setEditingProjectId(proj.id);
+    setEditProjTitle(proj.title);
+    setEditProjDesc(proj.description || '');
+    setEditProjRate(proj.hourlyRate);
+    setEditProjStatus(proj.status);
+    setEditProjBudget(proj.budget ?? '');
+  };
+
+  const handleEditProjSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!editingProjectId || !editProjTitle.trim()) return;
+    onEditProject(editingProjectId, {
+      title: editProjTitle.trim(),
+      description: editProjDesc.trim(),
+      hourlyRate: Number(editProjRate) || 0,
+      status: editProjStatus,
+      budget: editProjBudget !== '' ? Number(editProjBudget) : undefined,
+    });
+    setEditingProjectId(null);
   };
 
   return (
@@ -267,12 +299,22 @@ export default function ClientDetail({
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => onNavigateToTimeLog(proj.id)}
-                      className="w-full text-center py-2 border border-slate-105 border-slate-100 bg-slate-50 hover:bg-slate-100 rounded-xl text-[11px] font-semibold text-slate-700 transition-colors"
-                    >
-                      View Project Sheet
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => openEditProject(proj)}
+                        className="px-3 py-2 border border-slate-100 bg-slate-50 hover:bg-slate-100 rounded-xl text-[11px] font-semibold text-slate-700 transition-colors flex items-center gap-1"
+                        title="Edit project"
+                      >
+                        <Edit2 size={12} />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => onNavigateToTimeLog(proj.id)}
+                        className="flex-1 text-center py-2 border border-slate-100 bg-slate-50 hover:bg-slate-100 rounded-xl text-[11px] font-semibold text-slate-700 transition-colors"
+                      >
+                        View Project Sheet
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -441,6 +483,100 @@ export default function ClientDetail({
                 <button
                   type="button"
                   onClick={() => setIsEditClientOpen(false)}
+                  className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold hover:bg-slate-50 text-slate-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-all shadow-sm"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Project Dialog */}
+      {editingProjectId && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-slide-up">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Edit Project</h3>
+              <button
+                onClick={() => setEditingProjectId(null)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+                type="button"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditProjSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                  Project Title <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editProjTitle}
+                  onChange={(e) => setEditProjTitle(e.target.value)}
+                  className="w-full px-3.5 py-2 border border-slate-200 bg-white text-xs text-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-100 focus:border-slate-400 transition-all font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Description</label>
+                <textarea
+                  rows={2}
+                  value={editProjDesc}
+                  onChange={(e) => setEditProjDesc(e.target.value)}
+                  className="w-full px-3.5 py-2 border border-slate-200 bg-white text-xs text-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-100 focus:border-slate-400 transition-all font-sans"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Hourly Rate ($)</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={editProjRate}
+                    onChange={(e) => setEditProjRate(Math.max(1, parseInt(e.target.value) || 0))}
+                    className="w-full px-3.5 py-2 border border-slate-200 bg-white text-xs font-mono text-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-100 focus:border-slate-400 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Status</label>
+                  <select
+                    value={editProjStatus}
+                    onChange={(e: any) => setEditProjStatus(e.target.value)}
+                    className="w-full px-3.5 py-2 border border-slate-200 bg-white text-xs text-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-100 focus:border-slate-400 transition-all"
+                  >
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="PAUSED">PAUSED</option>
+                    <option value="COMPLETED">COMPLETED</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Project Budget ($)</label>
+                <input
+                  type="number"
+                  value={editProjBudget}
+                  onChange={(e) => setEditProjBudget(e.target.value !== '' ? parseInt(e.target.value) : '')}
+                  className="w-full px-3.5 py-2 border border-slate-200 bg-white text-xs font-mono text-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-100 focus:border-slate-400 transition-all"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setEditingProjectId(null)}
                   className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold hover:bg-slate-50 text-slate-500"
                 >
                   Cancel
