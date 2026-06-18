@@ -14,6 +14,18 @@ const SYMBOLS: Record<string, string> = {
 // Strip characters the standard PDF font can't encode.
 const clean = (s: string) => (s ?? '').replace(/[^\x20-\x7E]/g, '');
 
+// Embed a data-URL logo (PNG/JPEG) into the PDF; returns null if it can't.
+async function embedLogo(pdf: PDFDocument, dataUrl: string) {
+  try {
+    const match = /^data:image\/(png|jpe?g);base64,(.+)$/i.exec(dataUrl);
+    if (!match) return null;
+    const bytes = Uint8Array.from(atob(match[2]), (c) => c.charCodeAt(0));
+    return match[1].toLowerCase() === 'png' ? await pdf.embedPng(bytes) : await pdf.embedJpg(bytes);
+  } catch {
+    return null;
+  }
+}
+
 /** Build a professional one-page PDF invoice and trigger a browser download. */
 export async function downloadInvoicePdf(invoice: Invoice, settings: ProfileSettings): Promise<void> {
   const symbol = SYMBOLS[settings.currency] || '$';
@@ -41,9 +53,21 @@ export async function downloadInvoicePdf(invoice: Invoice, settings: ProfileSett
 
   let y = 791;
 
-  // Header
-  text(settings.businessName || 'Ryan Dev Studio', M, y, 18, bold);
-  text(settings.email || '', M, y - 17, 9, font, muted);
+  // Header — optional business logo to the left of the name
+  let nameX = M;
+  if (settings.logoUrl) {
+    const logo = await embedLogo(pdf, settings.logoUrl);
+    if (logo) {
+      const max = 48;
+      const scale = Math.min(max / logo.width, max / logo.height, 1);
+      const w = logo.width * scale;
+      const h = logo.height * scale;
+      page.drawImage(logo, { x: M, y: y - h + 13, width: w, height: h });
+      nameX = M + w + 12;
+    }
+  }
+  text(settings.businessName || 'Ryan Dev Studio', nameX, y, 18, bold);
+  text(settings.email || '', nameX, y - 17, 9, font, muted);
   rightText('INVOICE', width - M, y, 22, bold);
   rightText(invoice.id, width - M, y - 19, 11, font, muted);
   y -= 46;
